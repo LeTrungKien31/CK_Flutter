@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class SearchInput extends StatelessWidget {
+  // ignore: use_super_parameters
   const SearchInput({Key? key}) : super(key: key);
 
   @override

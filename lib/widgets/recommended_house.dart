@@ -7,14 +7,14 @@ import 'package:house_rent/widgets/circle_icon_button.dart';
 class RecommendedHouse extends StatelessWidget {
   final recommendedList = House.generateRecommended();
 
+  // ignore: use_super_parameters
   RecommendedHouse({Key? key}) : super(key: key);
 
+  // ignore: strict_top_level_inference
   _handleNavigateToDetails(BuildContext context, House house) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Details(house: house),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => Details(house: house)));
   }
 
   @override
@@ -41,9 +41,7 @@ class RecommendedHouse extends StatelessWidget {
                   Container(
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage(
-                          recommendedList[index].imageUrl,
-                        ),
+                        image: AssetImage(recommendedList[index].imageUrl),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -71,9 +69,7 @@ class RecommendedHouse extends StatelessWidget {
                             children: [
                               Text(
                                 recommendedList[index].name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headline1!
+                                style: Theme.of(context).textTheme.displayLarge!
                                     .copyWith(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -82,12 +78,9 @@ class RecommendedHouse extends StatelessWidget {
                               const SizedBox(height: 5),
                               Text(
                                 recommendedList[index].address,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyText1!
-                                    .copyWith(
-                                      fontSize: 12,
-                                    ),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge!.copyWith(fontSize: 12),
                               ),
                             ],
                           ),
@@ -98,7 +91,7 @@ class RecommendedHouse extends StatelessWidget {
                         ],
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

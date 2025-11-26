@@ -10,6 +10,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
     'home_mark'
   ];
 
+  // ignore: use_super_parameters
   CustomBottomNavigationBar({Key? key}) : super(key: key);
 
   @override
@@ -22,6 +23,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.grey.withOpacity(0.3),
             spreadRadius: 1,
             blurRadius: 7,

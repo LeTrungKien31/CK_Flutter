@@ -6,6 +6,7 @@ import 'package:house_rent/widgets/circle_icon_button.dart';
 class BestOffer extends StatelessWidget {
   final offerList = House.generateBestOffer();
 
+  // ignore: use_super_parameters
   BestOffer({Key? key}) : super(key: key);
 
   @override
@@ -19,16 +20,16 @@ class BestOffer extends StatelessWidget {
             children: [
               Text(
                 'Best Offer',
-                style: Theme.of(context).textTheme.headline1!.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(context).textTheme.displayLarge!.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Text(
                 'See All',
-                style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                      fontSize: 14,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge!.copyWith(fontSize: 14),
               ),
             ],
           ),
@@ -63,9 +64,7 @@ class BestOffer extends StatelessWidget {
                             children: [
                               Text(
                                 offer.name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headline1!
+                                style: Theme.of(context).textTheme.displayLarge!
                                     .copyWith(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -74,27 +73,26 @@ class BestOffer extends StatelessWidget {
                               const SizedBox(height: 10),
                               Text(
                                 offer.address,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyText1!
-                                    .copyWith(
-                                      fontSize: 14,
-                                    ),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge!.copyWith(fontSize: 14),
                               ),
                             ],
                           ),
                         ],
                       ),
                       const Positioned(
-                          right: 0,
-                          child: CircleIconButton(
-                            iconUrl: 'assets/icons/heart.svg',
-                            color: Colors.grey,
-                          ))
+                        right: 0,
+                        child: CircleIconButton(
+                          iconUrl: 'assets/icons/heart.svg',
+                          color: Colors.grey,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               )
+              // ignore: unnecessary_to_list_in_spreads
               .toList(),
         ],
       ),

@@ -6,11 +6,13 @@ import 'package:house_rent/models/house.dart';
 class DetailsAppBar extends StatelessWidget {
   final House house;
 
+  // ignore: use_super_parameters
   const DetailsAppBar({
     Key? key,
     required this.house,
   }) : super(key: key);
 
+  // ignore: strict_top_level_inference
   _handleNavigateBack(BuildContext context) {
     Navigator.of(context).pop();
   }

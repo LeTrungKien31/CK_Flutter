@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Categories extends StatefulWidget {
+  // ignore: use_super_parameters
   const Categories({Key? key}) : super(key: key);
 
   @override
@@ -17,6 +18,7 @@ class _CategoriesState extends State<Categories> {
 
   int currentSelect = 0;
 
+  // ignore: strict_top_level_inference
   _handleChangeCurrentCategory(int index) {
     setState(() {
       currentSelect = index;
@@ -49,7 +51,7 @@ class _CategoriesState extends State<Categories> {
               style: TextStyle(
                 color: currentSelect == index
                     ? Theme.of(context).primaryColor
-                    : Theme.of(context).textTheme.bodyText1!.color,
+                    : Theme.of(context).textTheme.bodyLarge!.color,
                 fontSize: currentSelect == index ? 16 : 14,
                 fontWeight: currentSelect == index
                     ? FontWeight.bold

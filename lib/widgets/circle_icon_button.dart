@@ -5,6 +5,7 @@ class CircleIconButton extends StatelessWidget {
   final String iconUrl;
   final Color color;
 
+  // ignore: use_super_parameters
   const CircleIconButton({
     Key? key,
     required this.iconUrl,

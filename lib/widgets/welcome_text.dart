@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class WelcomeText extends StatelessWidget {
+  // ignore: use_super_parameters
   const WelcomeText({Key? key}) : super(key: key);
 
   @override
@@ -12,7 +13,7 @@ class WelcomeText extends StatelessWidget {
         children: [
           Text(
             'Hello Ruize',
-            style: Theme.of(context).textTheme.bodyText1!.copyWith(
+            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -20,7 +21,7 @@ class WelcomeText extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'Find your sweet Home',
-            style: Theme.of(context).textTheme.headline1!.copyWith(
+            style: Theme.of(context).textTheme.displayLarge!.copyWith(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),

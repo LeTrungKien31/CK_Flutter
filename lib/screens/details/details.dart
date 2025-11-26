@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
 import 'package:house_rent/models/house.dart';
+import 'package:house_rent/screens/booking/booking_screen.dart';
 import 'package:house_rent/screens/details/components/about.dart';
 import 'package:house_rent/screens/details/components/content_intro.dart';
 import 'package:house_rent/screens/details/components/details_app_bar.dart';
@@ -21,14 +21,20 @@ class Details extends StatelessWidget {
             const SizedBox(height: 20),
             ContentIntro(house: house),
             const SizedBox(height: 20),
-            const HouseInfo(),
+            HouseInfo(house: house),
             const SizedBox(height: 20),
-            const About(),
+            About(description: house.description),
             const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => BookingScreen(house: house),
+                    ),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -39,7 +45,7 @@ class Details extends StatelessWidget {
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   child: const Text(
-                    'Book Now',
+                    'Đặt Phòng Ngay',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -49,6 +55,7 @@ class Details extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

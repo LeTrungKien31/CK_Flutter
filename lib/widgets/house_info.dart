@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 class HouseInfo extends StatelessWidget {
+  // ignore: use_super_parameters
   const HouseInfo({Key? key}) : super(key: key);
 
   @override
@@ -34,7 +35,7 @@ class HouseInfo extends StatelessWidget {
                 content: '5 Parking\n120 sqft',
               ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -45,11 +46,9 @@ class _MenuInfo extends StatelessWidget {
   final String imageUrl;
   final String content;
 
-  const _MenuInfo({
-    Key? key,
-    required this.imageUrl,
-    required this.content,
-  }) : super(key: key);
+  // ignore: use_super_parameters
+  const _MenuInfo({Key? key, required this.imageUrl, required this.content})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -60,9 +59,10 @@ class _MenuInfo extends StatelessWidget {
           const SizedBox(width: 20),
           Text(
             content,
-            style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                  fontSize: 12,
-                ),
+            // Dòng 59: bodyText1 → bodyLarge
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge!.copyWith(fontSize: 12),
           ),
         ],
       ),

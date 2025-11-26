@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  // ignore: use_super_parameters
   const CustomAppBar({Key? key}) : super(key: key);
 
   @override

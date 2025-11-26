@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class About extends StatelessWidget {
+  // ignore: use_super_parameters
   const About({Key? key}) : super(key: key);
 
   @override
@@ -12,7 +13,7 @@ class About extends StatelessWidget {
         children: [
           Text(
             'About',
-            style: Theme.of(context).textTheme.headline1!.copyWith(
+            style: Theme.of(context).textTheme.displayLarge!.copyWith(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -20,7 +21,7 @@ class About extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos exercitationem ut cupiditate...',
-            style: Theme.of(context).textTheme.bodyText1!.copyWith(
+            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   fontSize: 14,
                 ),
           )
