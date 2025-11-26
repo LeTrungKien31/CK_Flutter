@@ -39,6 +39,7 @@ class DetailsAppBar extends StatelessWidget {
                       width: 40,
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
+                        // ignore: deprecated_member_use
                         color: Colors.white.withOpacity(0.8),
                         shape: BoxShape.circle,
                       ),

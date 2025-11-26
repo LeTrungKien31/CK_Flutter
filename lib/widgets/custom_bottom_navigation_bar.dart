@@ -37,6 +37,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
             .map(
               (item) => SvgPicture.asset(
                 'assets/icons/$item.svg',
+                // ignore: deprecated_member_use
                 color: Theme.of(context).primaryColor,
               ),
             )

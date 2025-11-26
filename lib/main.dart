@@ -36,6 +36,7 @@ class MyApp extends StatelessWidget {
             color: Color(0xFF100E34),
           ),
           bodyLarge: TextStyle(
+            // ignore: deprecated_member_use
             color: const Color(0xFF100E34).withOpacity(0.5),
           ),
         ),

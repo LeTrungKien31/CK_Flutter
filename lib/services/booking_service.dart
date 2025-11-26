@@ -127,6 +127,7 @@ class BookingService {
         };
       }).toList();
     } catch (e) {
+      // ignore: avoid_print
       print('Error loading bookings: $e');
       return [];
     }

@@ -21,6 +21,7 @@ class HouseService {
 
       return results.map((row) => House.fromDatabase(row)).toList();
     } catch (e) {
+      // ignore: avoid_print
       print('Error loading houses: $e');
       return [];
     }
@@ -42,6 +43,7 @@ class HouseService {
       if (results.isEmpty) return null;
       return House.fromDatabase(results.first);
     } catch (e) {
+      // ignore: avoid_print
       print('Error loading house: $e');
       return null;
     }
@@ -61,6 +63,7 @@ class HouseService {
 
       return results.map((row) => House.fromDatabase(row)).toList();
     } catch (e) {
+      // ignore: avoid_print
       print('Error loading recommended houses: $e');
       return [];
     }
@@ -80,6 +83,7 @@ class HouseService {
 
       return results.map((row) => House.fromDatabase(row)).toList();
     } catch (e) {
+      // ignore: avoid_print
       print('Error loading best offer houses: $e');
       return [];
     }
@@ -102,6 +106,7 @@ class HouseService {
 
       return results.map((row) => House.fromDatabase(row)).toList();
     } catch (e) {
+      // ignore: avoid_print
       print('Error searching houses: $e');
       return [];
     }
