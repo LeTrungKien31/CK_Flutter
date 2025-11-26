@@ -11,6 +11,7 @@ void main() async {
   try {
     await DatabaseHelper().initDatabase();
   } catch (e) {
+    // ignore: avoid_print
     print('Database initialization error: $e');
   }
   
@@ -25,16 +26,16 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        backgroundColor: const Color(0xFFF5F6F6),
+        scaffoldBackgroundColor: const Color(0xFFF5F6F6),
         primaryColor: const Color(0xFF811B83),
         colorScheme: ColorScheme.fromSwatch().copyWith(
           secondary: const Color(0xFFFA5019),
         ),
         textTheme: TextTheme(
-          headline1: const TextStyle(
+          displayLarge: const TextStyle(
             color: Color(0xFF100E34),
           ),
-          bodyText1: TextStyle(
+          bodyLarge: TextStyle(
             color: const Color(0xFF100E34).withOpacity(0.5),
           ),
         ),
@@ -90,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen> {
             const SizedBox(height: 20),
             Text(
               'House Rent',
-              style: Theme.of(context).textTheme.headline1!.copyWith(
+              style: Theme.of(context).textTheme.displayLarge!.copyWith(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,

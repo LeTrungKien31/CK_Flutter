@@ -68,7 +68,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -87,7 +87,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               children: [
                 Text(
                   'Đăng Ký',
-                  style: Theme.of(context).textTheme.headline1!.copyWith(
+                  style: Theme.of(context).textTheme.displayLarge!.copyWith(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
@@ -96,7 +96,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 10),
                 Text(
                   'Tạo tài khoản mới',
-                  style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                         fontSize: 16,
                       ),
                   textAlign: TextAlign.center,
@@ -243,7 +243,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    primary: Theme.of(context).primaryColor,
+                    backgroundColor: Theme.of(context).primaryColor,
                   ),
                   child: _isLoading
                       ? const SizedBox(

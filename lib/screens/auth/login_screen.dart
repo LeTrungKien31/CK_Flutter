@@ -57,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -69,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 50),
                 Text(
                   'Đăng Nhập',
-                  style: Theme.of(context).textTheme.headline1!.copyWith(
+                  style: Theme.of(context).textTheme.displayLarge!.copyWith(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
@@ -78,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 10),
                 Text(
                   'Chào mừng bạn trở lại!',
-                  style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                         fontSize: 16,
                       ),
                   textAlign: TextAlign.center,
@@ -147,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    primary: Theme.of(context).primaryColor,
+                    backgroundColor: Theme.of(context).primaryColor,
                   ),
                   child: _isLoading
                       ? const SizedBox(
@@ -173,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text(
                       'Chưa có tài khoản? ',
-                      style: Theme.of(context).textTheme.bodyText1,
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     GestureDetector(
                       onTap: () {

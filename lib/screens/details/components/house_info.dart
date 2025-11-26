@@ -4,7 +4,7 @@ import 'package:house_rent/models/house.dart';
 
 class HouseInfo extends StatelessWidget {
   final House house;
-  
+
   const HouseInfo({Key? key, required this.house}) : super(key: key);
 
   @override

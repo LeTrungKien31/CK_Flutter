@@ -46,12 +46,10 @@ class _HomeState extends State<Home> {
     final bestOffer = await _houseService.getBestOfferHouses();
 
     setState(() {
-      _recommendedHouses = recommended.isNotEmpty 
-          ? recommended 
-          : House.generateRecommended();
-      _bestOfferHouses = bestOffer.isNotEmpty 
-          ? bestOffer 
-          : House.generateBestOffer();
+      _recommendedHouses =
+          recommended.isNotEmpty ? recommended : House.generateRecommended();
+      _bestOfferHouses =
+          bestOffer.isNotEmpty ? bestOffer : House.generateBestOffer();
       _isLoading = false;
     });
   }
@@ -67,7 +65,9 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
+      // ignore: deprecated_member_use
+      backgroundColor: Theme.of(context).colorScheme.background,
+      // hoặc surface, surfaceVariant tùy thiết kế
       appBar: CustomAppBar(onLogout: _handleLogout),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

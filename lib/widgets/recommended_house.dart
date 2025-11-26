@@ -5,20 +5,22 @@ import 'package:house_rent/screens/details/details.dart';
 import 'package:house_rent/widgets/circle_icon_button.dart';
 
 class RecommendedHouse extends StatelessWidget {
-  final recommendedList = House.generateRecommended();
+  final List<House> houses;
 
-  // ignore: use_super_parameters
-  RecommendedHouse({Key? key}) : super(key: key);
+  const RecommendedHouse({Key? key, required this.houses}) : super(key: key);
 
-  // ignore: strict_top_level_inference
-  _handleNavigateToDetails(BuildContext context, House house) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => Details(house: house)));
+  void _handleNavigateToDetails(BuildContext context, House house) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => Details(house: house)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (houses.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Padding(
       padding: const EdgeInsets.all(15),
       child: SizedBox(
@@ -26,8 +28,7 @@ class RecommendedHouse extends StatelessWidget {
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemBuilder: (context, index) => GestureDetector(
-            onTap: () =>
-                _handleNavigateToDetails(context, recommendedList[index]),
+            onTap: () => _handleNavigateToDetails(context, houses[index]),
             child: Container(
               height: 300,
               width: 230,
@@ -41,9 +42,10 @@ class RecommendedHouse extends StatelessWidget {
                   Container(
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage(recommendedList[index].imageUrl),
+                        image: AssetImage(houses[index].imageUrl),
                         fit: BoxFit.cover,
                       ),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   Positioned(
@@ -64,29 +66,37 @@ class RecommendedHouse extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                recommendedList[index].name,
-                                style: Theme.of(context).textTheme.displayLarge!
-                                    .copyWith(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                recommendedList[index].address,
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.bodyLarge!.copyWith(fontSize: 12),
-                              ),
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  houses[index].name,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .displayLarge!
+                                      .copyWith(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  houses[index].address,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(fontSize: 12),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 5),
                           CircleIconButton(
-                            iconUrl: 'assets/icons/mark.svg',
-                            color: Theme.of(context).colorScheme.secondary,
+                            iconUrl: 'assets/icons/heart.svg',
+                            color: Colors.grey.shade300,
                           ),
                         ],
                       ),
@@ -97,7 +107,7 @@ class RecommendedHouse extends StatelessWidget {
             ),
           ),
           separatorBuilder: (_, index) => const SizedBox(width: 20),
-          itemCount: recommendedList.length,
+          itemCount: houses.length,
         ),
       ),
     );

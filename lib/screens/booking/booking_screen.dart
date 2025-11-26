@@ -16,7 +16,7 @@ class _BookingScreenState extends State<BookingScreen> {
   final _notesController = TextEditingController();
   final _authService = AuthService();
   final _bookingService = BookingService();
-  
+
   DateTime? _checkInDate;
   DateTime? _checkOutDate;
   bool _isLoading = false;
@@ -115,7 +115,8 @@ class _BookingScreenState extends State<BookingScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Thành công'),
-          content: const Text('Đặt phòng thành công! Chúng tôi sẽ liên hệ với bạn sớm.'),
+          content: const Text(
+              'Đặt phòng thành công! Chúng tôi sẽ liên hệ với bạn sớm.'),
           actions: [
             TextButton(
               onPressed: () {
@@ -140,7 +141,7 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -151,7 +152,7 @@ class _BookingScreenState extends State<BookingScreen> {
         title: Text(
           'Đặt Phòng',
           style: TextStyle(
-            color: Theme.of(context).textTheme.headline1!.color,
+            color: Theme.of(context).textTheme.displayLarge!.color,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -189,7 +190,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             widget.house.name,
                             style: Theme.of(context)
                                 .textTheme
-                                .headline1!
+                                .displayLarge!
                                 .copyWith(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -198,14 +199,14 @@ class _BookingScreenState extends State<BookingScreen> {
                           const SizedBox(height: 5),
                           Text(
                             widget.house.address,
-                            style: Theme.of(context).textTheme.bodyText1,
+                            style: Theme.of(context).textTheme.bodyLarge,
                           ),
                           const SizedBox(height: 5),
                           Text(
                             '\$${widget.house.price}/tháng',
                             style: Theme.of(context)
                                 .textTheme
-                                .headline1!
+                                .displayLarge!
                                 .copyWith(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -221,7 +222,7 @@ class _BookingScreenState extends State<BookingScreen> {
               const SizedBox(height: 30),
               Text(
                 'Thông Tin Đặt Phòng',
-                style: Theme.of(context).textTheme.headline1!.copyWith(
+                style: Theme.of(context).textTheme.displayLarge!.copyWith(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -247,7 +248,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           children: [
                             Text(
                               'Ngày nhận phòng',
-                              style: Theme.of(context).textTheme.bodyText1,
+                              style: Theme.of(context).textTheme.bodyLarge,
                             ),
                             const SizedBox(height: 5),
                             Text(
@@ -256,7 +257,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                   : '${_checkInDate!.day}/${_checkInDate!.month}/${_checkInDate!.year}',
                               style: Theme.of(context)
                                   .textTheme
-                                  .headline1!
+                                  .displayLarge!
                                   .copyWith(fontSize: 16),
                             ),
                           ],
@@ -287,7 +288,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           children: [
                             Text(
                               'Ngày trả phòng',
-                              style: Theme.of(context).textTheme.bodyText1,
+                              style: Theme.of(context).textTheme.bodyLarge,
                             ),
                             const SizedBox(height: 5),
                             Text(
@@ -296,7 +297,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                   : '${_checkOutDate!.day}/${_checkOutDate!.month}/${_checkOutDate!.year}',
                               style: Theme.of(context)
                                   .textTheme
-                                  .headline1!
+                                  .displayLarge!
                                   .copyWith(fontSize: 16),
                             ),
                           ],
@@ -334,13 +335,13 @@ class _BookingScreenState extends State<BookingScreen> {
                       children: [
                         Text(
                           'Số ngày:',
-                          style: Theme.of(context).textTheme.bodyText1,
+                          style: Theme.of(context).textTheme.bodyLarge,
                         ),
                         Text(
                           '${_calculateDays()} ngày',
                           style: Theme.of(context)
                               .textTheme
-                              .headline1!
+                              .displayLarge!
                               .copyWith(fontSize: 16),
                         ),
                       ],
@@ -353,7 +354,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           'Tổng tiền:',
                           style: Theme.of(context)
                               .textTheme
-                              .headline1!
+                              .displayLarge!
                               .copyWith(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -363,7 +364,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           '\$${_calculateTotalPrice().toStringAsFixed(2)}',
                           style: Theme.of(context)
                               .textTheme
-                              .headline1!
+                              .displayLarge!
                               .copyWith(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -385,7 +386,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    primary: Theme.of(context).primaryColor,
+                    backgroundColor: Theme.of(context).primaryColor,
                   ),
                   child: _isLoading
                       ? const SizedBox(

@@ -29,6 +29,9 @@ dependencies:
   
   # Form Validation
   email_validator: ^2.1.17
+  
+  # Crypto for password hashing
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:

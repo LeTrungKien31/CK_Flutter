@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 class WelcomeText extends StatelessWidget {
-  // ignore: use_super_parameters
-  const WelcomeText({Key? key}) : super(key: key);
+  final String userName;
+  
+  const WelcomeText({Key? key, required this.userName}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +13,7 @@ class WelcomeText extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Hello Ruize',
+            'Hello $userName',
             style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
