@@ -15,7 +15,7 @@ class DatabaseHelper {
 
     try {
       _connection = PostgreSQLConnection(
-        'localhost', // Thay bằng host của bạn
+        '10.0.2.2', // Thay bằng host của bạn
         5432, // Port
         'house_rent_db', // Tên database
         username: 'postgres', // Username

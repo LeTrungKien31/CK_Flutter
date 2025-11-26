@@ -97,6 +97,19 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
+    // Nếu `house.id` null thì không gọi service (tránh crash do toán tử `!`)
+    if (widget.house.id == null) {
+      setState(() => _isLoading = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể đặt phòng: thông tin nhà chưa hợp lệ'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final result = await _bookingService.createBooking(
       userId: user['userId'],
       houseId: widget.house.id!,
