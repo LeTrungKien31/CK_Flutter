@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:house_rent/screens/admin/admin_bookings_screen.dart';
 import 'package:house_rent/screens/admin/admin_houses_screen.dart';
 import 'package:house_rent/screens/admin/admin_users_screen.dart';
+import 'package:house_rent/screens/auth/login_screen.dart';
 import 'package:house_rent/services/admin_service.dart';
 import 'package:house_rent/services/auth_service.dart';
 
@@ -69,10 +70,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
     await _authService.logout();
     if (!mounted) return;
 
-    // Navigator.of(context).pushAndRemoveUntil(
-    //   MaterialPageRoute(builder: (_) => const LoginChoiceScreen()),
-    //   (route) => false,
-    // );
+    // Điều hướng về màn hình login và xóa tất cả route
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
   }
 
   @override
@@ -126,7 +128,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       crossAxisCount: 2,
                       crossAxisSpacing: 15,
                       mainAxisSpacing: 15,
-                      // tăng chiều cao item để không bị overflow
                       childAspectRatio: 1.0,
                       children: [
                         _buildStatCard(
@@ -184,7 +185,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           MaterialPageRoute(
                             builder: (_) => const AdminBookingsScreen(),
                           ),
-                        ).then((_) => _loadStats()); // Refresh khi quay lại
+                        ).then((_) => _loadStats());
                       },
                     ),
                     const SizedBox(height: 15),
