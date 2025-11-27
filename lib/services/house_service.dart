@@ -49,6 +49,29 @@ class HouseService {
     }
   }
 
+  // Lấy nhà theo tên (dùng để cố gắng resolve id khi object mẫu không có id)
+  Future<House?> getHouseByName(String name) async {
+    try {
+      final conn = await _dbHelper.connection;
+      final results = await conn.query(
+        '''
+        SELECT id, name, address, image_url, price, area, bedrooms, bathrooms, kitchens, parking, description, is_available
+        FROM houses
+        WHERE name = @name
+        LIMIT 1
+        ''',
+        substitutionValues: {'name': name},
+      );
+
+      if (results.isEmpty) return null;
+      return House.fromDatabase(results.first);
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error loading house by name: $e');
+      return null;
+    }
+  }
+
   // Lấy nhà đề xuất
   Future<List<House>> getRecommendedHouses() async {
     try {

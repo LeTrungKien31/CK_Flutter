@@ -49,6 +49,7 @@ class House {
   static List<House> generateRecommended() {
     return [
       House(
+        id: 1,
         name: 'The Moon House',
         address: 'P455, Chhatak, Sylhet',
         imageUrl: 'assets/images/house01.jpeg',
@@ -56,6 +57,7 @@ class House {
         area: 500,
       ),
       House(
+        id: 2,
         name: 'Sunset Villa',
         address: 'P455, Chhatak, Sylhet',
         imageUrl: 'assets/images/house02.jpeg',
@@ -68,6 +70,7 @@ class House {
   static List<House> generateBestOffer() {
     return [
       House(
+        id: 3,
         name: 'Garden Paradise',
         address: 'P455, Chhatak, Sylhet',
         imageUrl: 'assets/images/offer01.jpeg',
@@ -75,6 +78,7 @@ class House {
         area: 450,
       ),
       House(
+        id: 4,
         name: 'Modern Loft',
         address: 'P455, Chhatak, Sylhet',
         imageUrl: 'assets/images/offer02.jpeg',

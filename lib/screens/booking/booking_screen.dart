@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:house_rent/models/house.dart';
 import 'package:house_rent/services/auth_service.dart';
 import 'package:house_rent/services/booking_service.dart';
+import 'package:house_rent/services/house_service.dart';
 
 class BookingScreen extends StatefulWidget {
   final House house;
@@ -16,6 +17,7 @@ class _BookingScreenState extends State<BookingScreen> {
   final _notesController = TextEditingController();
   final _authService = AuthService();
   final _bookingService = BookingService();
+  final _houseService = HouseService();
 
   DateTime? _checkInDate;
   DateTime? _checkOutDate;
@@ -97,7 +99,16 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
-    // Nếu `house.id` null thì không gọi service (tránh crash do toán tử `!`)
+    // KIỂM TRA NULL - QUAN TRỌNG
+    // Nếu `house.id` null thì thử resolve từ DB bằng `name` trước khi từ chối
+    if (widget.house.id == null) {
+      final resolved = await _houseService.getHouseByName(widget.house.name);
+      if (resolved != null) {
+        // gán id từ DB cho object hiện tại
+        widget.house.id = resolved.id;
+      }
+    }
+
     if (widget.house.id == null) {
       setState(() => _isLoading = false);
       if (!mounted) return;
@@ -112,7 +123,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
     final result = await _bookingService.createBooking(
       userId: user['userId'],
-      houseId: widget.house.id!,
+      house: widget.house,
       checkInDate: _checkInDate!,
       checkOutDate: _checkOutDate!,
       totalPrice: _calculateTotalPrice(),

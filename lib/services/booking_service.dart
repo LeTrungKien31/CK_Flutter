@@ -1,4 +1,5 @@
 import 'database_helper.dart';
+import 'package:house_rent/models/house.dart';
 
 class BookingService {
   static final BookingService _instance = BookingService._internal();
@@ -10,7 +11,7 @@ class BookingService {
   // Tạo booking mới
   Future<Map<String, dynamic>> createBooking({
     required int userId,
-    required int houseId,
+    required House house,
     required DateTime checkInDate,
     required DateTime checkOutDate,
     required double totalPrice,
@@ -19,10 +20,41 @@ class BookingService {
     try {
       final conn = await _dbHelper.connection;
 
+      // Nếu object House không có id, chèn vào bảng houses trước
+      int houseIdToUse;
+      if (house.id == null) {
+        final insertHouseResult = await conn.query(
+          '''
+          INSERT INTO houses (name, address, image_url, price, area, bedrooms, bathrooms, kitchens, parking, description, is_available)
+          VALUES (@name, @address, @imageUrl, @price, @area, @bedrooms, @bathrooms, @kitchens, @parking, @description, @isAvailable)
+          RETURNING id
+          ''',
+          substitutionValues: {
+            'name': house.name,
+            'address': house.address,
+            'imageUrl': house.imageUrl,
+            'price': house.price ?? 0,
+            'area': house.area ?? 0,
+            'bedrooms': house.bedrooms,
+            'bathrooms': house.bathrooms,
+            'kitchens': house.kitchens,
+            'parking': house.parking,
+            'description': house.description,
+            'isAvailable': house.isAvailable ?? true,
+          },
+        );
+
+        houseIdToUse = insertHouseResult.first[0] as int;
+        // cập nhật id lên object
+        house.id = houseIdToUse;
+      } else {
+        houseIdToUse = house.id!;
+      }
+
       // Kiểm tra phòng còn trống
       final houseCheck = await conn.query(
         'SELECT is_available FROM houses WHERE id = @houseId',
-        substitutionValues: {'houseId': houseId},
+        substitutionValues: {'houseId': houseIdToUse},
       );
 
       if (houseCheck.isEmpty) {
@@ -50,9 +82,9 @@ class BookingService {
         )
         ''',
         substitutionValues: {
-          'houseId': houseId,
-          'checkIn': checkInDate.toIso8601String(),
-          'checkOut': checkOutDate.toIso8601String(),
+          'houseId': houseIdToUse,
+          'checkIn': checkInDate,
+          'checkOut': checkOutDate,
         },
       );
 
@@ -72,9 +104,9 @@ class BookingService {
         ''',
         substitutionValues: {
           'userId': userId,
-          'houseId': houseId,
-          'checkIn': checkInDate.toIso8601String(),
-          'checkOut': checkOutDate.toIso8601String(),
+          'houseId': houseIdToUse,
+          'checkIn': checkInDate,
+          'checkOut': checkOutDate,
           'totalPrice': totalPrice,
           'notes': notes,
         },
