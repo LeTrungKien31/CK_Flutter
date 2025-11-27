@@ -1,11 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Thêm permissions cần thiết -->
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET"/>
     
     <application
         android:label="house_rent"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -31,16 +32,17 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             
-            <!-- Deep link intent for payment return -->
-            <intent-filter android:autoVerify="true">
+            <!-- Deep link intent for payment return (supports custom URI scheme)
+                 Removed android:autoVerify (used for http/https app links) and
+                 allow matching by scheme so uni_links can receive incoming URIs
+            -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                
-                <!-- Deep link scheme cho VNPay callback -->
-                <data
-                    android:scheme="houserent"
-                    android:host="payment-return" />
+
+                <!-- Match any URI with the custom scheme `houserent` -->
+                <data android:scheme="houserent" />
             </intent-filter>
         </activity>
         
@@ -51,23 +53,33 @@
             android:value="2" />
     </application>
     
-    <!-- Required to query activities that can process text, see:
-         https://developer.android.com/training/package-visibility and
-         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
-
-         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+    <!-- Queries for url_launcher and web browsing -->
     <queries>
+        <!-- For processing text -->
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        
+        <!-- For opening HTTPS URLs -->
         <intent>
             <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
             <data android:scheme="https" />
         </intent>
+        
+        <!-- For opening HTTP URLs -->
         <intent>
             <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
             <data android:scheme="http" />
+        </intent>
+        
+        <!-- For opening web browsers -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" android:host="*" />
         </intent>
     </queries>
 </manifest>

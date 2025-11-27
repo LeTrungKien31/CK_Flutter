@@ -1,18 +1,12 @@
 // lib/main.dart
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:uni_links/uni_links.dart';
 
 import 'package:house_rent/screens/auth/login_screen.dart';
 import 'package:house_rent/screens/home/home.dart';
 import 'package:house_rent/screens/admin/admin_dashboard.dart';
 import 'package:house_rent/services/auth_service.dart';
 import 'package:house_rent/services/database_helper.dart';
-
-// sửa đường dẫn cho đúng file service & screen của bạn
-import 'package:house_rent/services/vnpay_service.dart';
-import 'package:house_rent/screens/payment/payment_result_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,77 +23,8 @@ void main() async {
   runApp(const MyApp());
 }
 
-// MyApp là StatefulWidget để xử lý deep link VNPay
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  StreamSubscription? _sub;
-  final _vnpayService = VNPayService();
-
-  @override
-  void initState() {
-    super.initState();
-    _initUniLinks();
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
-
-  // Xử lý deep link
-  Future<void> _initUniLinks() async {
-    try {
-      // Initial link (khi app mở từ deep link)
-      final initialUri = await getInitialUri();
-      if (initialUri != null) {
-        _handleDeepLink(initialUri);
-      }
-
-      // Lắng nghe các deep link khi app đang chạy
-      _sub = uriLinkStream.listen((Uri? uri) {
-        if (uri != null) {
-          _handleDeepLink(uri);
-        }
-      }, onError: (err) {
-        // ignore: avoid_print
-        print('Deep link error: $err');
-      });
-    } catch (e) {
-      // ignore: avoid_print
-      print('Failed to get initial URI: $e');
-    }
-  }
-
-  void _handleDeepLink(Uri uri) {
-    // ignore: avoid_print
-    print('Received deep link: $uri');
-
-    // Ví dụ: houserent://payment-return?...params...
-    if (uri.scheme == 'houserent' && uri.host == 'payment-return') {
-      final params = uri.queryParameters;
-
-      final result = _vnpayService.verifyCallback(params);
-
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => PaymentResultScreen(
-            isSuccess: result['success'] == true,
-            message: result['message']?.toString() ?? '',
-            txnRef: result['txnRef']?.toString(),
-            transactionNo: result['transactionNo']?.toString(),
-            // tạm thời KHÔNG truyền amount để tránh lỗi kiểu dữ liệu
-          ),
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,6 +68,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkLoginStatus() async {
+    // Delay 2s để hiện splash
     await Future.delayed(const Duration(seconds: 2));
 
     final isLoggedIn = await _authService.isLoggedIn();
