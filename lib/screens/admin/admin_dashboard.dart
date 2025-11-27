@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:house_rent/screens/admin/admin_bookings_screen.dart';
 import 'package:house_rent/screens/admin/admin_houses_screen.dart';
-import 'package:house_rent/screens/admin/admin_users_screen.dart' hide AdminUsersScreen;
-import 'package:house_rent/screens/auth/login_choice_screen.dart';
+import 'package:house_rent/screens/admin/admin_users_screen.dart';
 import 'package:house_rent/services/admin_service.dart';
 import 'package:house_rent/services/auth_service.dart';
 
@@ -28,7 +27,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Future<void> _loadStats() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final stats = await _adminService.getDashboardStats();
       if (mounted) {
@@ -70,10 +69,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
     await _authService.logout();
     if (!mounted) return;
 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginChoiceScreen()),
-      (route) => false,
-    );
+    // Navigator.of(context).pushAndRemoveUntil(
+    //   MaterialPageRoute(builder: (_) => const LoginChoiceScreen()),
+    //   (route) => false,
+    // );
   }
 
   @override
@@ -119,7 +118,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           ),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Stats Grid
                     GridView.count(
                       shrinkWrap: true,
@@ -127,7 +126,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       crossAxisCount: 2,
                       crossAxisSpacing: 15,
                       mainAxisSpacing: 15,
-                      childAspectRatio: 1.3,
+                      // tăng chiều cao item để không bị overflow
+                      childAspectRatio: 1.0,
                       children: [
                         _buildStatCard(
                           context,
@@ -159,9 +159,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 30),
-                    
+
                     Text(
                       'Quản lý',
                       style: Theme.of(context).textTheme.displayLarge!.copyWith(
@@ -170,7 +170,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           ),
                     ),
                     const SizedBox(height: 15),
-                    
+
                     // Management Menu
                     _buildMenuCard(
                       context,
@@ -235,12 +235,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
     Color color,
   ) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 5,
@@ -251,17 +252,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 40),
-          const SizedBox(height: 10),
+          Icon(icon, color: color, size: 36),
+          const SizedBox(height: 8),
           Text(
             value,
             style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 4),
           Text(
             title,
             style: Theme.of(context).textTheme.bodyLarge!.copyWith(
@@ -293,6 +294,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.grey.withOpacity(0.1),
               spreadRadius: 1,
               blurRadius: 5,
@@ -305,6 +307,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
+                // ignore: deprecated_member_use
                 color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),

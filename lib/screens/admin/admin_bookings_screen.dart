@@ -203,6 +203,23 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
     }
   }
 
+  // Helper method để format price an toàn
+  String _formatPrice(dynamic price) {
+    if (price == null) return '0.00';
+    
+    try {
+      if (price is num) {
+        return price.toStringAsFixed(2);
+      } else if (price is String) {
+        final parsedPrice = double.tryParse(price);
+        return parsedPrice?.toStringAsFixed(2) ?? '0.00';
+      }
+      return '0.00';
+    } catch (e) {
+      return '0.00';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -302,6 +319,7 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 5,
@@ -359,11 +377,14 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
                   children: [
                     Icon(Icons.email, size: 16, color: Colors.grey.shade600),
                     const SizedBox(width: 5),
-                    Text(
-                      booking['userEmail'] ?? 'N/A',
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                            fontSize: 14,
-                          ),
+                    Expanded(
+                      child: Text(
+                        booking['userEmail'] ?? 'N/A',
+                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                              fontSize: 14,
+                            ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -440,17 +461,16 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
                 ),
                 const SizedBox(height: 15),
                 
-                // Price
+                // Price - Sử dụng helper method để format an toàn
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'Tổng tiền:',
-                      style:
-                          Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 14),
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 14),
                     ),
                     Text(
-                      '\$${booking['totalPrice']?.toStringAsFixed(2) ?? "0.00"}',
+                      '\$${_formatPrice(booking['totalPrice'])}',
                       style: Theme.of(context).textTheme.displayLarge!.copyWith(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,

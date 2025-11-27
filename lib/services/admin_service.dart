@@ -13,7 +13,8 @@ class AdminService {
     try {
       final conn = await _dbHelper.connection;
 
-      final totalUsers = await conn.query('SELECT COUNT(*) FROM users WHERE role != \'admin\'');
+      final totalUsers = await conn
+          .query('SELECT COUNT(*) FROM users WHERE role != \'admin\'');
       final totalHouses = await conn.query('SELECT COUNT(*) FROM houses');
       final totalBookings = await conn.query('SELECT COUNT(*) FROM bookings');
       final pendingBookings = await conn.query(
@@ -34,6 +35,53 @@ class AdminService {
         'totalHouses': 0,
         'totalBookings': 0,
         'pendingBookings': 0,
+      };
+    }
+  }
+
+  // Thêm nhà mới
+  Future<Map<String, dynamic>> addHouse({
+    required String name,
+    required String address,
+    required String imageUrl,
+    required double price,
+    double? area,
+    int? bedrooms,
+    int? bathrooms,
+    int? kitchens,
+    int? parking,
+    String? description,
+  }) async {
+    try {
+      final conn = await _dbHelper.connection;
+
+      await conn.query(
+        '''
+        INSERT INTO houses (name, address, image_url, price, area, bedrooms, bathrooms, kitchens, parking, description, is_available)
+        VALUES (@name, @address, @imageUrl, @price, @area, @bedrooms, @bathrooms, @kitchens, @parking, @description, true)
+        ''',
+        substitutionValues: {
+          'name': name,
+          'address': address,
+          'imageUrl': imageUrl,
+          'price': price,
+          'area': area,
+          'bedrooms': bedrooms,
+          'bathrooms': bathrooms,
+          'kitchens': kitchens,
+          'parking': parking,
+          'description': description,
+        },
+      );
+
+      return {
+        'success': true,
+        'message': 'Thêm nhà thành công',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Lỗi: ${e.toString()}',
       };
     }
   }

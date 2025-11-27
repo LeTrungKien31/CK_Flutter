@@ -25,9 +25,11 @@ class DatabaseHelper {
       );
 
       await _connection!.open();
+      // ignore: avoid_print
       print('✅ Database connected successfully');
       return _connection!;
     } catch (e) {
+      // ignore: avoid_print
       print('❌ Database connection error: $e');
       rethrow;
     }
@@ -37,6 +39,7 @@ class DatabaseHelper {
   Future<void> closeConnection() async {
     if (_connection != null && _connection!.isClosed == false) {
       await _connection!.close();
+      // ignore: avoid_print
       print('Database connection closed');
     }
   }
@@ -52,6 +55,7 @@ class DatabaseHelper {
   Future<void> initDatabase() async {
     try {
       final conn = await connection;
+      // ignore: avoid_print
       print('🔧 Initializing database...');
 
       // Tạo bảng users với cột role
@@ -68,6 +72,7 @@ class DatabaseHelper {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       ''');
+      // ignore: avoid_print
       print('✅ Table users created/exists');
 
       // Đảm bảo cột role tồn tại (cho trường hợp DB cũ không có cột này)
@@ -76,8 +81,10 @@ class DatabaseHelper {
           ALTER TABLE users
           ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user';
         ''');
+        // ignore: avoid_print
         print('✅ Role column checked/added');
       } catch (e) {
+        // ignore: avoid_print
         print('ℹ️ Role column may already exist: $e');
       }
 
@@ -102,6 +109,7 @@ class DatabaseHelper {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       ''');
+      // ignore: avoid_print
       print('✅ Table houses created/exists');
 
       // Tạo bảng bookings
@@ -119,13 +127,16 @@ class DatabaseHelper {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       ''');
+      // ignore: avoid_print
       print('✅ Table bookings created/exists');
 
       // Insert dữ liệu mẫu cho houses
       await _insertSampleHouses(conn);
 
+      // ignore: avoid_print
       print('✅ Database initialization completed');
     } catch (e) {
+      // ignore: avoid_print
       print('❌ Database initialization error: $e');
       rethrow;
     }
@@ -139,6 +150,7 @@ class DatabaseHelper {
       );
 
       if (adminCheck.isEmpty) {
+        // ignore: avoid_print
         print('📝 Creating default admin account...');
 
         // Tạo admin với:
@@ -160,13 +172,18 @@ class DatabaseHelper {
           },
         );
 
+        // ignore: avoid_print
         print('✅ Default admin created:');
+        // ignore: avoid_print
         print('   Email: admin@house.com');
+        // ignore: avoid_print
         print('   Password: admin123');
       } else {
+        // ignore: avoid_print
         print('ℹ️ Admin account already exists');
       }
     } catch (e) {
+      // ignore: avoid_print
       print('❌ Error creating admin: $e');
     }
   }
@@ -178,10 +195,12 @@ class DatabaseHelper {
       final count = countResult.first[0] as int;
 
       if (count > 0) {
+        // ignore: avoid_print
         print('ℹ️ Sample houses already exist ($count houses)');
         return;
       }
 
+      // ignore: avoid_print
       print('📝 Inserting sample houses...');
 
       // Insert từng house để dễ debug
@@ -259,11 +278,14 @@ class DatabaseHelper {
             'description': house['description'],
           },
         );
+        // ignore: avoid_print
         print('  ✅ Inserted: ${house['name']}');
       }
 
+      // ignore: avoid_print
       print('✅ All sample houses inserted successfully');
     } catch (e) {
+      // ignore: avoid_print
       print('❌ Error inserting sample houses: $e');
       rethrow;
     }
@@ -280,12 +302,18 @@ class DatabaseHelper {
       final admins =
           await conn.query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
 
+      // ignore: avoid_print
       print('\n📊 Database Status:');
+      // ignore: avoid_print
       print('  Houses: ${houses.first[0]}');
+      // ignore: avoid_print
       print('  Users: ${users.first[0]}');
+      // ignore: avoid_print
       print('  Admins: ${admins.first[0]}');
+      // ignore: avoid_print
       print('  Bookings: ${bookings.first[0]}');
     } catch (e) {
+      // ignore: avoid_print
       print('❌ Error checking data: $e');
     }
   }

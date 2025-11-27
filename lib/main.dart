@@ -1,6 +1,6 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:house_rent/screens/auth/login_choice_screen.dart';
+import 'package:house_rent/screens/auth/login_screen.dart';
 import 'package:house_rent/screens/home/home.dart';
 import 'package:house_rent/screens/admin/admin_dashboard.dart';
 import 'package:house_rent/services/auth_service.dart';
@@ -40,6 +40,7 @@ class MyApp extends StatelessWidget {
             color: Color(0xFF100E34),
           ),
           bodyLarge: TextStyle(
+            // ignore: deprecated_member_use
             color: const Color(0xFF100E34).withOpacity(0.5),
           ),
         ),
@@ -76,15 +77,17 @@ class _SplashScreenState extends State<SplashScreen> {
       // Kiểm tra role để điều hướng
       final isAdmin = await _authService.isAdmin();
 
+      // ignore: use_build_context_synchronously
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => isAdmin ? const AdminDashboard() : const Home(),
         ),
       );
     } else {
+      // Điều hướng thẳng đến màn hình đăng nhập
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const LoginChoiceScreen(),
+          builder: (_) => const LoginScreen(),
         ),
       );
     }
@@ -114,9 +117,10 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Admin System',
+              'Find Your Sweet Home',
               style: TextStyle(
                 fontSize: 14,
+                // ignore: deprecated_member_use
                 color: Colors.white.withOpacity(0.8),
               ),
             ),

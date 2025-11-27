@@ -1,3 +1,4 @@
+// lib/services/auth_service.dart
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
@@ -74,8 +75,8 @@ class AuthService {
     }
   }
 
-  // Đăng nhập user thường
-  Future<Map<String, dynamic>> login({
+  // Đăng nhập thống nhất (cho cả user và admin)
+  Future<Map<String, dynamic>> unifiedLogin({
     required String email,
     required String password,
   }) async {
@@ -109,14 +110,6 @@ class AuthService {
       final phone = user[3] as String?;
       final role = user[4] as String? ?? 'user';
 
-      // Chỉ cho phép user thường đăng nhập ở đây
-      if (role == 'admin') {
-        return {
-          'success': false,
-          'message': 'Vui lòng sử dụng trang đăng nhập admin',
-        };
-      }
-
       // Lưu thông tin đăng nhập
       await _saveLoginInfo(userId, userEmail, fullName ?? '', phone ?? '', role);
 
@@ -137,59 +130,22 @@ class AuthService {
     }
   }
 
-  // Đăng nhập admin
+  // Đăng nhập user thường (deprecated - giữ lại để tương thích ngược)
+  @Deprecated('Use unifiedLogin instead')
+  Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
+    return unifiedLogin(email: email, password: password);
+  }
+
+  // Đăng nhập admin (deprecated - giữ lại để tương thích ngược)
+  @Deprecated('Use unifiedLogin instead')
   Future<Map<String, dynamic>> adminLogin({
     required String email,
     required String password,
   }) async {
-    try {
-      final conn = await _dbHelper.connection;
-      final hashedPassword = _hashPassword(password);
-
-      final result = await conn.query(
-        '''
-        SELECT id, email, full_name, phone, role
-        FROM users
-        WHERE email = @email AND password = @password AND role = 'admin'
-        ''',
-        substitutionValues: {
-          'email': email,
-          'password': hashedPassword,
-        },
-      );
-
-      if (result.isEmpty) {
-        return {
-          'success': false,
-          'message': 'Email hoặc mật khẩu admin không đúng',
-        };
-      }
-
-      final user = result.first;
-      final userId = user[0] as int;
-      final userEmail = user[1] as String;
-      final fullName = user[2] as String?;
-      final phone = user[3] as String?;
-      final role = user[4] as String;
-
-      // Lưu thông tin đăng nhập
-      await _saveLoginInfo(userId, userEmail, fullName ?? '', phone ?? '', role);
-
-      return {
-        'success': true,
-        'message': 'Đăng nhập admin thành công',
-        'userId': userId,
-        'email': userEmail,
-        'fullName': fullName,
-        'phone': phone,
-        'role': role,
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Lỗi: ${e.toString()}',
-      };
-    }
+    return unifiedLogin(email: email, password: password);
   }
 
   // Lưu thông tin đăng nhập

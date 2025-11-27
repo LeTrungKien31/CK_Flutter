@@ -1,6 +1,8 @@
+// lib/screens/auth/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:house_rent/screens/auth/register_screen.dart';
 import 'package:house_rent/screens/home/home.dart';
+import 'package:house_rent/screens/admin/admin_dashboard.dart';
 import 'package:house_rent/services/auth_service.dart';
 import 'package:email_validator/email_validator.dart';
 
@@ -31,7 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    final result = await _authService.login(
+    // Sử dụng unified login method
+    final result = await _authService.unifiedLogin(
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
@@ -41,9 +44,18 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (result['success']) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const Home()),
-      );
+      // Điều hướng dựa trên role
+      final role = result['role'] as String? ?? 'user';
+      
+      if (role == 'admin') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AdminDashboard()),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const Home()),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -67,6 +79,12 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 50),
+                Icon(
+                  Icons.home_rounded,
+                  size: 100,
+                  color: Theme.of(context).primaryColor,
+                ),
+                const SizedBox(height: 20),
                 Text(
                   'Đăng Nhập',
                   style: Theme.of(context).textTheme.displayLarge!.copyWith(
@@ -193,6 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 20),
               ],
             ),
           ),

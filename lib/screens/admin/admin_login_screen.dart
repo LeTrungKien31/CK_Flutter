@@ -31,6 +31,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 
     setState(() => _isLoading = true);
 
+    // ignore: deprecated_member_use_from_same_package
     final result = await _authService.adminLogin(
       email: _emailController.text.trim(),
       password: _passwordController.text,
