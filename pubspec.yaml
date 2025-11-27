@@ -36,6 +36,8 @@ dependencies:
   path_provider: ^2.1.2         # Lưu file local
   path: ^1.8.3                  # Xử lý đường dẫn file
   intl: ^0.18.1                 # Format ngày tháng
+  url_launcher: ^6.1.11
+  uni_links: ^0.5.1
 
 dev_dependencies:
   flutter_test:
