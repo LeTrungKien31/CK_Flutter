@@ -260,42 +260,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         );
                       },
                     ),
-                    _buildMenuItem(
-                      context,
-                      'Thông báo',
-                      Icons.notifications_outlined,
-                      () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Chức năng đang phát triển'),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildMenuItem(
-                      context,
-                      'Ngôn ngữ',
-                      Icons.language,
-                      () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Chức năng đang phát triển'),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildMenuItem(
-                      context,
-                      'Trợ giúp & Hỗ trợ',
-                      Icons.help_outline,
-                      () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Chức năng đang phát triển'),
-                          ),
-                        );
-                      },
-                    ),
+
                     _buildMenuItem(
                       context,
                       'Về chúng tôi',

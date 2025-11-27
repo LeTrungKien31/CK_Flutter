@@ -28,10 +28,14 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     final user = await _authService.getCurrentUser();
     if (user != null) {
       final bookings = await _bookingService.getUserBookings(user['userId']);
-      setState(() => _bookings = bookings);
+      if (mounted) {
+        setState(() => _bookings = bookings);
+      }
     }
 
-    setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _cancelBooking(int bookingId) async {
@@ -109,6 +113,14 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       default:
         return status;
     }
+  }
+
+  String _formatPrice(dynamic price) {
+    if (price == null) return '0.00';
+    if (price is num) {
+      return price.toDouble().toStringAsFixed(2);
+    }
+    return '0.00';
   }
 
   @override
@@ -228,7 +240,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    booking['houseName'],
+                                    booking['houseName'] ?? '',
                                     style: Theme.of(context)
                                         .textTheme
                                         .displayLarge!
@@ -248,7 +260,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                       const SizedBox(width: 5),
                                       Expanded(
                                         child: Text(
-                                          booking['houseAddress'],
+                                          booking['houseAddress'] ?? '',
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodyLarge!
@@ -330,7 +342,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                             .copyWith(fontSize: 14),
                                       ),
                                       Text(
-                                        '\$${booking['totalPrice']?.toStringAsFixed(2) ?? '0'}',
+                                        '\$${_formatPrice(booking['totalPrice'])}',
                                         style: Theme.of(context)
                                             .textTheme
                                             .displayLarge!
