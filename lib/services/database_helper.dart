@@ -23,11 +23,9 @@ class DatabaseHelper {
       );
 
       await _connection!.open();
-      // ignore: avoid_print
       print('✅ Database connected successfully');
       return _connection!;
     } catch (e) {
-      // ignore: avoid_print
       print('❌ Database connection error: $e');
       rethrow;
     }
@@ -37,7 +35,6 @@ class DatabaseHelper {
   Future<void> closeConnection() async {
     if (_connection != null && _connection!.isClosed == false) {
       await _connection!.close();
-      // ignore: avoid_print
       print('Database connection closed');
     }
   }
@@ -46,10 +43,9 @@ class DatabaseHelper {
   Future<void> initDatabase() async {
     try {
       final conn = await connection;
-      // ignore: avoid_print
       print('🔧 Initializing database...');
 
-      // Tạo bảng users
+      // Tạo bảng users với cột avatar_path và address
       await conn.execute('''
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
@@ -57,11 +53,24 @@ class DatabaseHelper {
           password VARCHAR(255) NOT NULL,
           full_name VARCHAR(255),
           phone VARCHAR(20),
+          address TEXT,
+          avatar_path TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       ''');
-      // ignore: avoid_print
       print('✅ Table users created/exists');
+
+      // Kiểm tra và thêm cột nếu chưa tồn tại
+      try {
+        await conn.execute('''
+          ALTER TABLE users 
+          ADD COLUMN IF NOT EXISTS address TEXT,
+          ADD COLUMN IF NOT EXISTS avatar_path TEXT
+        ''');
+        print('✅ Added address and avatar_path columns to users table');
+      } catch (e) {
+        print('ℹ️ Columns may already exist: $e');
+      }
 
       // Tạo bảng houses
       await conn.execute('''
@@ -81,7 +90,6 @@ class DatabaseHelper {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       ''');
-      // ignore: avoid_print
       print('✅ Table houses created/exists');
 
       // Tạo bảng bookings
@@ -99,16 +107,13 @@ class DatabaseHelper {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       ''');
-      // ignore: avoid_print
       print('✅ Table bookings created/exists');
 
       // Insert dữ liệu mẫu cho houses
       await _insertSampleHouses(conn);
       
-      // ignore: avoid_print
       print('✅ Database initialization completed');
     } catch (e) {
-      // ignore: avoid_print  
       print('❌ Database initialization error: $e');
       rethrow;
     }
@@ -121,12 +126,10 @@ class DatabaseHelper {
       final count = countResult.first[0] as int;
       
       if (count > 0) {
-        // ignore: avoid_print
         print('ℹ️ Sample houses already exist ($count houses)');
         return;
       }
 
-      // ignore: avoid_print
       print('📝 Inserting sample houses...');
 
       // Insert từng house để dễ debug
@@ -141,7 +144,7 @@ class DatabaseHelper {
           'bathrooms': 5,
           'kitchens': 2,
           'parking': 5,
-          'description': 'Beautiful house with modern amenities'
+          'description': 'Beautiful house with modern amenities and stunning moon views'
         },
         {
           'name': 'Sunset Villa',
@@ -153,7 +156,7 @@ class DatabaseHelper {
           'bathrooms': 4,
           'kitchens': 2,
           'parking': 6,
-          'description': 'Luxury villa near the beach'
+          'description': 'Luxury villa near the beach with breathtaking sunset views'
         },
         {
           'name': 'Garden Paradise',
@@ -165,7 +168,7 @@ class DatabaseHelper {
           'bathrooms': 3,
           'kitchens': 1,
           'parking': 4,
-          'description': 'Cozy house with beautiful garden'
+          'description': 'Cozy house with beautiful garden and peaceful surroundings'
         },
         {
           'name': 'Modern Loft',
@@ -177,7 +180,7 @@ class DatabaseHelper {
           'bathrooms': 2,
           'kitchens': 1,
           'parking': 3,
-          'description': 'Contemporary design in city center'
+          'description': 'Contemporary design in city center with all modern facilities'
         }
       ];
 
@@ -200,14 +203,11 @@ class DatabaseHelper {
             'description': house['description'],
           },
         );
-        // ignore: avoid_print
         print('  ✅ Inserted: ${house['name']}');
       }
 
-      // ignore: avoid_print
       print('✅ All sample houses inserted successfully');
     } catch (e) {
-      // ignore: avoid_print
       print('❌ Error inserting sample houses: $e');
       rethrow;
     }
@@ -222,16 +222,11 @@ class DatabaseHelper {
       final users = await conn.query('SELECT COUNT(*) FROM users');
       final bookings = await conn.query('SELECT COUNT(*) FROM bookings');
       
-      // ignore: avoid_print
       print('\n📊 Database Status:');
-      // ignore: avoid_print
       print('  Houses: ${houses.first[0]}');
-      // ignore: avoid_print
       print('  Users: ${users.first[0]}');
-      // ignore: avoid_print
       print('  Bookings: ${bookings.first[0]}');
     } catch (e) {
-      // ignore: avoid_print
       print('❌ Error checking data: $e');
     }
   }

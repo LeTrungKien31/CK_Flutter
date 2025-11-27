@@ -17,6 +17,9 @@ class AuthService {
     return digest.toString();
   }
 
+  // Public wrapper để hash mật khẩu (sử dụng từ các service khác)
+  String hashPassword(String password) => _hashPassword(password);
+
   // Đăng ký
   Future<Map<String, dynamic>> register({
     required String email,
