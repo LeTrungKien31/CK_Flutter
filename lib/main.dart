@@ -1,20 +1,24 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:house_rent/screens/auth/login_screen.dart';
+import 'package:house_rent/screens/auth/login_choice_screen.dart';
 import 'package:house_rent/screens/home/home.dart';
+import 'package:house_rent/screens/admin/admin_dashboard.dart';
 import 'package:house_rent/services/auth_service.dart';
 import 'package:house_rent/services/database_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Khởi tạo database
   try {
     await DatabaseHelper().initDatabase();
+    // In thông tin database
+    await DatabaseHelper().checkData();
   } catch (e) {
     // ignore: avoid_print
     print('Database initialization error: $e');
   }
-  
+
   runApp(const MyApp());
 }
 
@@ -36,7 +40,6 @@ class MyApp extends StatelessWidget {
             color: Color(0xFF100E34),
           ),
           bodyLarge: TextStyle(
-            // ignore: deprecated_member_use
             color: const Color(0xFF100E34).withOpacity(0.5),
           ),
         ),
@@ -64,16 +67,27 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkLoginStatus() async {
     await Future.delayed(const Duration(seconds: 2));
-    
+
     final isLoggedIn = await _authService.isLoggedIn();
-    
+
     if (!mounted) return;
-    
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => isLoggedIn ? const Home() : const LoginScreen(),
-      ),
-    );
+
+    if (isLoggedIn) {
+      // Kiểm tra role để điều hướng
+      final isAdmin = await _authService.isAdmin();
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => isAdmin ? const AdminDashboard() : const Home(),
+        ),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const LoginChoiceScreen(),
+        ),
+      );
+    }
   }
 
   @override
@@ -97,6 +111,14 @@ class _SplashScreenState extends State<SplashScreen> {
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Admin System',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white.withOpacity(0.8),
+              ),
             ),
             const SizedBox(height: 40),
             const CircularProgressIndicator(

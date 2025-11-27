@@ -1,4 +1,6 @@
 import 'package:postgres/postgres.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -15,7 +17,7 @@ class DatabaseHelper {
 
     try {
       _connection = PostgreSQLConnection(
-        '10.0.2.2', // Thay bằng host của bạn
+        '10.0.2.2', // Host cho emulator Android (localhost máy thật)
         5432, // Port
         'house_rent_db', // Tên database
         username: 'postgres', // Username
@@ -39,13 +41,20 @@ class DatabaseHelper {
     }
   }
 
+  // Hash password
+  String _hashPassword(String password) {
+    final bytes = utf8.encode(password);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
   // Khởi tạo database
   Future<void> initDatabase() async {
     try {
       final conn = await connection;
       print('🔧 Initializing database...');
 
-      // Tạo bảng users với cột avatar_path và address
+      // Tạo bảng users với cột role
       await conn.execute('''
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
@@ -55,22 +64,25 @@ class DatabaseHelper {
           phone VARCHAR(20),
           address TEXT,
           avatar_path TEXT,
+          role VARCHAR(20) DEFAULT 'user',
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       ''');
       print('✅ Table users created/exists');
 
-      // Kiểm tra và thêm cột nếu chưa tồn tại
+      // Đảm bảo cột role tồn tại (cho trường hợp DB cũ không có cột này)
       try {
         await conn.execute('''
-          ALTER TABLE users 
-          ADD COLUMN IF NOT EXISTS address TEXT,
-          ADD COLUMN IF NOT EXISTS avatar_path TEXT
+          ALTER TABLE users
+          ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user';
         ''');
-        print('✅ Added address and avatar_path columns to users table');
+        print('✅ Role column checked/added');
       } catch (e) {
-        print('ℹ️ Columns may already exist: $e');
+        print('ℹ️ Role column may already exist: $e');
       }
+
+      // Tạo admin mặc định nếu chưa tồn tại
+      await _createDefaultAdmin(conn);
 
       // Tạo bảng houses
       await conn.execute('''
@@ -111,11 +123,51 @@ class DatabaseHelper {
 
       // Insert dữ liệu mẫu cho houses
       await _insertSampleHouses(conn);
-      
+
       print('✅ Database initialization completed');
     } catch (e) {
       print('❌ Database initialization error: $e');
       rethrow;
+    }
+  }
+
+  Future<void> _createDefaultAdmin(PostgreSQLConnection conn) async {
+    try {
+      // Kiểm tra xem đã có admin chưa
+      final adminCheck = await conn.query(
+        "SELECT id FROM users WHERE role = 'admin' LIMIT 1",
+      );
+
+      if (adminCheck.isEmpty) {
+        print('📝 Creating default admin account...');
+
+        // Tạo admin với:
+        // Email: admin@house.com
+        // Password: admin123
+        final hashedPassword = _hashPassword('admin123');
+
+        await conn.query(
+          '''
+          INSERT INTO users (email, password, full_name, phone, role)
+          VALUES (@email, @password, @fullName, @phone, 'admin')
+          RETURNING id
+          ''',
+          substitutionValues: {
+            'email': 'admin@house.com',
+            'password': hashedPassword,
+            'fullName': 'Administrator',
+            'phone': '0000000000',
+          },
+        );
+
+        print('✅ Default admin created:');
+        print('   Email: admin@house.com');
+        print('   Password: admin123');
+      } else {
+        print('ℹ️ Admin account already exists');
+      }
+    } catch (e) {
+      print('❌ Error creating admin: $e');
     }
   }
 
@@ -124,7 +176,7 @@ class DatabaseHelper {
       // Kiểm tra xem đã có dữ liệu chưa
       final countResult = await conn.query('SELECT COUNT(*) FROM houses');
       final count = countResult.first[0] as int;
-      
+
       if (count > 0) {
         print('ℹ️ Sample houses already exist ($count houses)');
         return;
@@ -144,7 +196,8 @@ class DatabaseHelper {
           'bathrooms': 5,
           'kitchens': 2,
           'parking': 5,
-          'description': 'Beautiful house with modern amenities and stunning moon views'
+          'description':
+              'Beautiful house with modern amenities and stunning moon views'
         },
         {
           'name': 'Sunset Villa',
@@ -156,7 +209,8 @@ class DatabaseHelper {
           'bathrooms': 4,
           'kitchens': 2,
           'parking': 6,
-          'description': 'Luxury villa near the beach with breathtaking sunset views'
+          'description':
+              'Luxury villa near the beach with breathtaking sunset views'
         },
         {
           'name': 'Garden Paradise',
@@ -168,7 +222,8 @@ class DatabaseHelper {
           'bathrooms': 3,
           'kitchens': 1,
           'parking': 4,
-          'description': 'Cozy house with beautiful garden and peaceful surroundings'
+          'description':
+              'Cozy house with beautiful garden and peaceful surroundings'
         },
         {
           'name': 'Modern Loft',
@@ -180,7 +235,8 @@ class DatabaseHelper {
           'bathrooms': 2,
           'kitchens': 1,
           'parking': 3,
-          'description': 'Contemporary design in city center with all modern facilities'
+          'description':
+              'Contemporary design in city center with all modern facilities'
         }
       ];
 
@@ -217,14 +273,17 @@ class DatabaseHelper {
   Future<void> checkData() async {
     try {
       final conn = await connection;
-      
+
       final houses = await conn.query('SELECT COUNT(*) FROM houses');
       final users = await conn.query('SELECT COUNT(*) FROM users');
       final bookings = await conn.query('SELECT COUNT(*) FROM bookings');
-      
+      final admins =
+          await conn.query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
+
       print('\n📊 Database Status:');
       print('  Houses: ${houses.first[0]}');
       print('  Users: ${users.first[0]}');
+      print('  Admins: ${admins.first[0]}');
       print('  Bookings: ${bookings.first[0]}');
     } catch (e) {
       print('❌ Error checking data: $e');

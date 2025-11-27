@@ -43,12 +43,12 @@ class AuthService {
         };
       }
 
-      // Thêm user mới
+      // Thêm user mới với role mặc định là 'user'
       final hashedPassword = _hashPassword(password);
       final result = await conn.query(
         '''
-        INSERT INTO users (email, password, full_name, phone)
-        VALUES (@email, @password, @fullName, @phone)
+        INSERT INTO users (email, password, full_name, phone, role)
+        VALUES (@email, @password, @fullName, @phone, 'user')
         RETURNING id
         ''',
         substitutionValues: {
@@ -74,7 +74,7 @@ class AuthService {
     }
   }
 
-  // Đăng nhập
+  // Đăng nhập user thường
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
@@ -85,7 +85,7 @@ class AuthService {
 
       final result = await conn.query(
         '''
-        SELECT id, email, full_name, phone
+        SELECT id, email, full_name, phone, role
         FROM users
         WHERE email = @email AND password = @password
         ''',
@@ -107,9 +107,18 @@ class AuthService {
       final userEmail = user[1] as String;
       final fullName = user[2] as String?;
       final phone = user[3] as String?;
+      final role = user[4] as String? ?? 'user';
+
+      // Chỉ cho phép user thường đăng nhập ở đây
+      if (role == 'admin') {
+        return {
+          'success': false,
+          'message': 'Vui lòng sử dụng trang đăng nhập admin',
+        };
+      }
 
       // Lưu thông tin đăng nhập
-      await _saveLoginInfo(userId, userEmail, fullName ?? '', phone ?? '');
+      await _saveLoginInfo(userId, userEmail, fullName ?? '', phone ?? '', role);
 
       return {
         'success': true,
@@ -118,6 +127,62 @@ class AuthService {
         'email': userEmail,
         'fullName': fullName,
         'phone': phone,
+        'role': role,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Lỗi: ${e.toString()}',
+      };
+    }
+  }
+
+  // Đăng nhập admin
+  Future<Map<String, dynamic>> adminLogin({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final conn = await _dbHelper.connection;
+      final hashedPassword = _hashPassword(password);
+
+      final result = await conn.query(
+        '''
+        SELECT id, email, full_name, phone, role
+        FROM users
+        WHERE email = @email AND password = @password AND role = 'admin'
+        ''',
+        substitutionValues: {
+          'email': email,
+          'password': hashedPassword,
+        },
+      );
+
+      if (result.isEmpty) {
+        return {
+          'success': false,
+          'message': 'Email hoặc mật khẩu admin không đúng',
+        };
+      }
+
+      final user = result.first;
+      final userId = user[0] as int;
+      final userEmail = user[1] as String;
+      final fullName = user[2] as String?;
+      final phone = user[3] as String?;
+      final role = user[4] as String;
+
+      // Lưu thông tin đăng nhập
+      await _saveLoginInfo(userId, userEmail, fullName ?? '', phone ?? '', role);
+
+      return {
+        'success': true,
+        'message': 'Đăng nhập admin thành công',
+        'userId': userId,
+        'email': userEmail,
+        'fullName': fullName,
+        'phone': phone,
+        'role': role,
       };
     } catch (e) {
       return {
@@ -133,12 +198,14 @@ class AuthService {
     String email,
     String fullName,
     String phone,
+    String role,
   ) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('userId', userId);
     await prefs.setString('email', email);
     await prefs.setString('fullName', fullName);
     await prefs.setString('phone', phone);
+    await prefs.setString('role', role);
     await prefs.setBool('isLoggedIn', true);
   }
 
@@ -146,6 +213,13 @@ class AuthService {
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('isLoggedIn') ?? false;
+  }
+
+  // Kiểm tra có phải admin không
+  Future<bool> isAdmin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final role = prefs.getString('role') ?? 'user';
+    return role == 'admin';
   }
 
   // Lấy thông tin user hiện tại
@@ -160,6 +234,7 @@ class AuthService {
       'email': prefs.getString('email'),
       'fullName': prefs.getString('fullName'),
       'phone': prefs.getString('phone'),
+      'role': prefs.getString('role') ?? 'user',
     };
   }
 
