@@ -11,8 +11,8 @@ class VNPayService {
   // Cấu hình VNPay - THAY ĐỔI THEO THÔNG TIN CỦA BẠN
   static const String vnpTmnCode = 'Z3M71GK8'; // Mã website
   static const String vnpHashSecret = '5SUW2HBMDQ2ZA8B7SBIAWC3SS29WOQ36'; // Chuỗi bí mật
-  static const String vnpUrl = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'; // URL thanh toán (sandbox)
-  static const String vnpReturnUrl = 'houserent://payment-return'; // URL return
+  static const String vnpUrl = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
+  static const String vnpReturnUrl = 'houserent://payment-return';
 
   // Tạo URL thanh toán
   Future<Map<String, dynamic>> createPaymentUrl({
@@ -22,7 +22,6 @@ class VNPayService {
     String? bankCode,
   }) async {
     try {
-      // Tạo các tham số
       final DateTime now = DateTime.now();
       final String createDate = _formatDateTime(now);
       final String txnRef = 'BOOKING_${bookingId}_${now.millisecondsSinceEpoch}';
@@ -45,25 +44,19 @@ class VNPayService {
         'vnp_CreateDate': createDate,
       };
 
-      // Thêm bankCode nếu có
       if (bankCode != null && bankCode.isNotEmpty) {
         vnpParams['vnp_BankCode'] = bankCode;
       }
 
-      // Sắp xếp params theo alphabet
       final sortedParams = Map.fromEntries(
         vnpParams.entries.toList()..sort((a, b) => a.key.compareTo(b.key))
       );
 
-      // Tạo query string
       final queryString = sortedParams.entries
           .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
           .join('&');
 
-      // Tạo secure hash
       final secureHash = _hmacSHA512(queryString, vnpHashSecret);
-      
-      // URL cuối cùng
       final paymentUrl = '$vnpUrl?$queryString&vnp_SecureHash=$secureHash';
 
       return {
@@ -79,19 +72,42 @@ class VNPayService {
     }
   }
 
-  // Mở trình duyệt để thanh toán
+  // Mở trình duyệt để thanh toán - IMPROVED VERSION
   Future<bool> openPaymentUrl(String url) async {
     try {
       final Uri uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
+      
+      // Thử nhiều mode khác nhau
+      // 1. Thử mở external application trước (browser riêng)
+      bool launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      
+      if (launched) {
         return true;
       }
-      return false;
+
+      // 2. Nếu không được, thử platformDefault
+      launched = await launchUrl(
+        uri,
+        mode: LaunchMode.platformDefault,
+      );
+      
+      if (launched) {
+        return true;
+      }
+
+      // 3. Cuối cùng thử externalNonBrowserApplication
+      launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalNonBrowserApplication,
+      );
+      
+      return launched;
     } catch (e) {
+      // ignore: avoid_print
+      print('Error launching URL: $e');
       return false;
     }
   }
@@ -99,7 +115,6 @@ class VNPayService {
   // Xác thực callback từ VNPay
   Map<String, dynamic> verifyCallback(Map<String, String> params) {
     try {
-      // Lấy secure hash từ params
       final String? vnpSecureHash = params['vnp_SecureHash'];
       if (vnpSecureHash == null) {
         return {
@@ -108,25 +123,20 @@ class VNPayService {
         };
       }
 
-      // Loại bỏ secure hash và signature khỏi params
       final paramsToVerify = Map<String, String>.from(params);
       paramsToVerify.remove('vnp_SecureHash');
       paramsToVerify.remove('vnp_SecureHashType');
 
-      // Sắp xếp params
       final sortedParams = Map.fromEntries(
         paramsToVerify.entries.toList()..sort((a, b) => a.key.compareTo(b.key))
       );
 
-      // Tạo query string
       final queryString = sortedParams.entries
           .map((e) => '${e.key}=${e.value}')
           .join('&');
 
-      // Tính secure hash
       final calculatedHash = _hmacSHA512(queryString, vnpHashSecret);
 
-      // So sánh hash
       if (calculatedHash != vnpSecureHash) {
         return {
           'success': false,
@@ -134,7 +144,6 @@ class VNPayService {
         };
       }
 
-      // Kiểm tra response code
       final String responseCode = params['vnp_ResponseCode'] ?? '';
       final bool isSuccess = responseCode == '00';
 
@@ -157,7 +166,6 @@ class VNPayService {
     }
   }
 
-  // Format datetime theo định dạng VNPay: yyyyMMddHHmmss
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.year}'
         '${dateTime.month.toString().padLeft(2, '0')}'
@@ -167,62 +175,49 @@ class VNPayService {
         '${dateTime.second.toString().padLeft(2, '0')}';
   }
 
-  // Tạo HMAC SHA512
   String _hmacSHA512(String data, String key) {
     final hmac = Hmac(sha512, utf8.encode(key));
     final digest = hmac.convert(utf8.encode(data));
     return digest.toString();
   }
 
-  // Lấy thông báo lỗi từ response code
   String _getResponseMessage(String code) {
     switch (code) {
       case '00':
         return 'Giao dịch thành công';
       case '07':
-        return 'Trừ tiền thành công. Giao dịch bị nghi ngờ (liên quan tới lừa đảo, giao dịch bất thường)';
+        return 'Trừ tiền thành công. Giao dịch bị nghi ngờ';
       case '09':
-        return 'Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng chưa đăng ký dịch vụ InternetBanking tại ngân hàng';
+        return 'Thẻ/Tài khoản chưa đăng ký InternetBanking';
       case '10':
-        return 'Giao dịch không thành công do: Khách hàng xác thực thông tin thẻ/tài khoản không đúng quá 3 lần';
+        return 'Xác thực thông tin không đúng quá 3 lần';
       case '11':
-        return 'Giao dịch không thành công do: Đã hết hạn chờ thanh toán';
+        return 'Đã hết hạn chờ thanh toán';
       case '12':
-        return 'Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng bị khóa';
+        return 'Thẻ/Tài khoản bị khóa';
       case '13':
-        return 'Giao dịch không thành công do: Quý khách nhập sai mật khẩu xác thực giao dịch (OTP)';
+        return 'Nhập sai mật khẩu OTP';
       case '24':
-        return 'Giao dịch không thành công do: Khách hàng hủy giao dịch';
+        return 'Khách hàng hủy giao dịch';
       case '51':
-        return 'Giao dịch không thành công do: Tài khoản của quý khách không đủ số dư để thực hiện giao dịch';
+        return 'Tài khoản không đủ số dư';
       case '65':
-        return 'Giao dịch không thành công do: Tài khoản của Quý khách đã vượt quá hạn mức giao dịch trong ngày';
+        return 'Vượt quá hạn mức giao dịch trong ngày';
       case '75':
         return 'Ngân hàng thanh toán đang bảo trì';
       case '79':
-        return 'Giao dịch không thành công do: KH nhập sai mật khẩu thanh toán quá số lần quy định';
+        return 'Nhập sai mật khẩu quá số lần quy định';
       default:
         return 'Giao dịch thất bại';
     }
   }
 
-  // Các ngân hàng hỗ trợ
   List<Map<String, String>> getSupportedBanks() {
     return [
       {'code': '', 'name': 'Cổng thanh toán VNPay', 'logo': 'vnpay'},
       {'code': 'VNPAYQR', 'name': 'Thanh toán qua QR Code', 'logo': 'qr'},
       {'code': 'VNBANK', 'name': 'Ngân hàng Nội địa', 'logo': 'bank'},
       {'code': 'INTCARD', 'name': 'Thẻ quốc tế', 'logo': 'card'},
-      {'code': 'VIETCOMBANK', 'name': 'Vietcombank', 'logo': 'vcb'},
-      {'code': 'VIETINBANK', 'name': 'VietinBank', 'logo': 'vtb'},
-      {'code': 'BIDV', 'name': 'BIDV', 'logo': 'bidv'},
-      {'code': 'AGRIBANK', 'name': 'Agribank', 'logo': 'agb'},
-      {'code': 'SACOMBANK', 'name': 'Sacombank', 'logo': 'scb'},
-      {'code': 'TECHCOMBANK', 'name': 'Techcombank', 'logo': 'tcb'},
-      {'code': 'ACB', 'name': 'ACB', 'logo': 'acb'},
-      {'code': 'VPBANK', 'name': 'VPBank', 'logo': 'vpb'},
-      {'code': 'TPBANK', 'name': 'TPBank', 'logo': 'tpb'},
-      {'code': 'MBBANK', 'name': 'MBBank', 'logo': 'mbb'},
     ];
   }
 }

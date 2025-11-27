@@ -1,5 +1,6 @@
 // lib/screens/payment/payment_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:house_rent/services/vnpay_service.dart';
 import 'package:house_rent/services/booking_service.dart';
 
@@ -21,11 +22,11 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   final _vnpayService = VNPayService();
-  // ignore: unused_field
   final _bookingService = BookingService();
-  
+
   String? _selectedBankCode;
   bool _isProcessing = false;
+  String? _paymentUrl; // Để test
 
   Future<void> _handlePayment() async {
     setState(() => _isProcessing = true);
@@ -43,24 +44,87 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       if (result['success']) {
         final paymentUrl = result['paymentUrl'];
-        
-        // Mở trình duyệt
-        final opened = await _vnpayService.openPaymentUrl(paymentUrl);
-        
-        if (!opened && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Không thể mở trình duyệt thanh toán'),
-              backgroundColor: Colors.red,
+
+        // Lưu URL để debug
+        setState(() {
+          _paymentUrl = paymentUrl;
+        });
+
+        print('Payment URL created: $paymentUrl');
+
+        // Show dialog với option copy URL
+        final shouldOpen = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Mở trình duyệt'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Nhấn OK để mở trình duyệt thanh toán'),
+                const SizedBox(height: 15),
+                const Text(
+                  'Nếu không mở được, nhấn "Copy URL" và dán vào trình duyệt',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
             ),
-          );
-        } else {
-          // Quay về màn hình trước và đợi kết quả
-          if (mounted) {
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: paymentUrl));
+                  Navigator.pop(context, false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Đã copy URL vào clipboard'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+                child: const Text('Copy URL'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldOpen == true) {
+          // Mở trình duyệt
+          final opened = await _vnpayService.openPaymentUrl(paymentUrl);
+
+          if (!mounted) return;
+
+          if (opened) {
+            print('Browser opened successfully');
+            // Quay về màn hình trước
             Navigator.of(context).pop({
               'waiting': true,
               'txnRef': result['txnRef'],
             });
+          } else {
+            print('Failed to open browser');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text(
+                    'Không thể mở trình duyệt. URL đã được copy vào clipboard'),
+                backgroundColor: Colors.orange,
+                action: SnackBarAction(
+                  label: 'Copy lại',
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: paymentUrl));
+                  },
+                ),
+              ),
+            );
+            // Copy URL vào clipboard
+            await Clipboard.setData(ClipboardData(text: paymentUrl));
           }
         }
       } else {
@@ -72,6 +136,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         );
       }
     } catch (e) {
+      print('Payment error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -118,7 +183,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  // ignore: deprecated_member_use
                   color: Colors.grey.withOpacity(0.1),
                   spreadRadius: 1,
                   blurRadius: 5,
@@ -184,7 +248,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           ),
                     ),
                     Text(
-                      '\$${widget.amount.toStringAsFixed(2)}',
+                      '${widget.amount.toStringAsFixed(0)} VNĐ',
                       style: Theme.of(context).textTheme.displayLarge!.copyWith(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -233,9 +297,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           ),
                           child: RadioListTile<String?>(
                             value: bank['code'],
-                            // ignore: deprecated_member_use
                             groupValue: _selectedBankCode,
-                            // ignore: deprecated_member_use
                             onChanged: (value) {
                               setState(() => _selectedBankCode = value);
                             },
@@ -257,6 +319,41 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
             ),
           ),
+
+          // Debug info (chỉ hiển thị khi đã tạo URL)
+          if (_paymentUrl != null)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'URL đã tạo (nhấn để copy)',
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.copy, size: 20),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: _paymentUrl!));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Đã copy URL'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 10),
 
           // Nút thanh toán
           Container(
