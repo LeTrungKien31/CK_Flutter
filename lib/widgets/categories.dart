@@ -10,10 +10,10 @@ class Categories extends StatefulWidget {
 
 class _CategoriesState extends State<Categories> {
   final categories = [
-    'Top Recommended',
-    'Near You',
-    'Agency Recommended',
-    'Most Popular'
+    'Đề xuất hàng đầu',
+    'Gần bạn',
+    'Được đại lý đề xuất',
+    'Phổ biến nhất'
   ];
 
   int currentSelect = 0;

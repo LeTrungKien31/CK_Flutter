@@ -32,7 +32,7 @@ class ContentIntro extends StatelessWidget {
           ),
           const SizedBox(height: 15),
           Text(
-            '${house.area ?? 0} sqft',
+            '${house.area ?? 0} m²',
             style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   fontSize: 14,
                 ),
@@ -49,7 +49,7 @@ class ContentIntro extends StatelessWidget {
                       ),
                 ),
                 TextSpan(
-                  text: ' Per Month',
+                  text: ' Mỗi Tháng',
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                         fontSize: 14,
                       ),

@@ -13,12 +13,12 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
     with SingleTickerProviderStateMixin {
   final _adminService = AdminService();
   late TabController _tabController;
-  
+
   List<Map<String, dynamic>> _pendingBookings = [];
   List<Map<String, dynamic>> _confirmedBookings = [];
   List<Map<String, dynamic>> _cancelledBookings = [];
   List<Map<String, dynamic>> _completedBookings = [];
-  
+
   bool _isLoading = false;
 
   @override
@@ -203,21 +203,21 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
     }
   }
 
-  // Helper method để format price an toàn
+  // Format price => VND
   String _formatPrice(dynamic price) {
-    if (price == null) return '0.00';
-    
-    try {
-      if (price is num) {
-        return price.toStringAsFixed(2);
-      } else if (price is String) {
-        final parsedPrice = double.tryParse(price);
-        return parsedPrice?.toStringAsFixed(2) ?? '0.00';
-      }
-      return '0.00';
-    } catch (e) {
-      return '0.00';
+    if (price == null) return '0 đ';
+
+    num value;
+    if (price is num) {
+      value = price;
+    } else if (price is String) {
+      value = num.tryParse(price) ?? 0;
+    } else {
+      value = 0;
     }
+
+    final formatter = NumberFormat('#,##0', 'vi_VN');
+    return '${formatter.format(value)} đ';
   }
 
   @override
@@ -319,7 +319,6 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            // ignore: deprecated_member_use
             color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 5,
@@ -358,7 +357,7 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
                       ),
                 ),
                 const SizedBox(height: 10),
-                
+
                 // User Info
                 Row(
                   children: [
@@ -401,9 +400,9 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
                     ),
                   ],
                 ),
-                
+
                 const Divider(height: 20),
-                
+
                 // Dates
                 Row(
                   children: [
@@ -460,17 +459,20 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
                   ],
                 ),
                 const SizedBox(height: 15),
-                
-                // Price - Sử dụng helper method để format an toàn
+
+                // Price - dùng VND
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'Tổng tiền:',
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 14),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge!
+                          .copyWith(fontSize: 14),
                     ),
                     Text(
-                      '\$${_formatPrice(booking['totalPrice'])}',
+                      _formatPrice(booking['totalPrice']),
                       style: Theme.of(context).textTheme.displayLarge!.copyWith(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -481,24 +483,27 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
                 ),
 
                 // Notes
-                if (booking['notes'] != null && booking['notes'].toString().isNotEmpty)
+                if (booking['notes'] != null &&
+                    booking['notes'].toString().isNotEmpty)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 10),
                       Text(
                         'Ghi chú:',
-                        style: Theme.of(context)
-                            .textTheme
-                            .displayLarge!
-                            .copyWith(fontSize: 14, fontWeight: FontWeight.bold),
+                        style:
+                            Theme.of(context).textTheme.displayLarge!.copyWith(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       const SizedBox(height: 5),
                       Text(
                         booking['notes'] ?? '',
-                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                              fontSize: 13,
-                            ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyLarge!
+                            .copyWith(fontSize: 13),
                       ),
                     ],
                   ),

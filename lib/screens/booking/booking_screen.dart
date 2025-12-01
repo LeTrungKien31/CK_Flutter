@@ -1,5 +1,6 @@
-// lib/screens/booking/booking_screen.dart (CẬP NHẬT)
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 import 'package:house_rent/models/house.dart';
 import 'package:house_rent/services/auth_service.dart';
 import 'package:house_rent/services/booking_service.dart';
@@ -30,6 +31,41 @@ class _BookingScreenState extends State<BookingScreen> {
     _notesController.dispose();
     super.dispose();
   }
+
+  // ---------- TIỀN & NGÀY ----------
+
+  int _calculateDays() {
+    if (_checkInDate == null || _checkOutDate == null) return 0;
+    return _checkOutDate!.difference(_checkInDate!).inDays;
+  }
+
+  /// DB: price lưu theo **nghìn đồng / ngày**
+  /// VD: 4000  -> 4.000.000 đ / ngày
+  ///     4455  -> 4.455.000 đ / ngày
+  double _getDailyPriceVND() {
+    final priceThousand = (widget.house.price ?? 0).toDouble();
+    return priceThousand * 1000;
+  }
+
+  /// Tổng tiền = số ngày * giá/ngày (VND)
+  double _calculateTotalPriceVND() {
+    final days = _calculateDays();
+    if (days <= 0) return 0;
+    return _getDailyPriceVND() * days;
+  }
+
+  String _formatVND(double amount) {
+    final formatter = NumberFormat('#,##0', 'vi_VN');
+    return '${formatter.format(amount)} đ';
+  }
+
+  String _formatMillionPerDay(double dailyPriceVND) {
+    if (dailyPriceVND <= 0) return 'Liên hệ';
+    final million = dailyPriceVND / 10000000;
+    return '${million.toStringAsFixed(3)} USD / ngày';
+  }
+
+  // ---------- CHỌN NGÀY ----------
 
   Future<void> _selectDate(BuildContext context, bool isCheckIn) async {
     final DateTime? picked = await showDatePicker(
@@ -63,24 +99,11 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
-  int _calculateDays() {
-    if (_checkInDate == null || _checkOutDate == null) return 0;
-    return _checkOutDate!.difference(_checkInDate!).inDays;
-  }
-
-  double _calculateTotalPrice() {
-    final days = _calculateDays();
-    if (days <= 0 || widget.house.price == null) return 0;
-    return days * widget.house.price!;
-  }
-
-  // Chuyển đổi USD sang VND (giả sử tỷ giá 1 USD = 24,000 VND)
-  double _convertToVND(double usdAmount) {
-    return usdAmount * 24000;
-  }
+  // ---------- HANDLE ĐẶT PHÒNG ----------
 
   Future<void> _handleBooking() async {
     if (!_formKey.currentState!.validate()) return;
+
     if (_checkInDate == null || _checkOutDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -109,9 +132,7 @@ class _BookingScreenState extends State<BookingScreen> {
     // Resolve house ID nếu cần
     if (widget.house.id == null) {
       final resolved = await _houseService.getHouseByName(widget.house.name);
-      if (resolved != null) {
-        widget.house.id = resolved.id;
-      }
+      if (resolved != null) widget.house.id = resolved.id;
     }
 
     if (widget.house.id == null) {
@@ -126,13 +147,15 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
-    // Tạo booking
+    final totalPriceVND = _calculateTotalPriceVND();
+
+    // Lưu booking xuống DB
     final result = await _bookingService.createBooking(
       userId: user['userId'],
       house: widget.house,
       checkInDate: _checkInDate!,
       checkOutDate: _checkOutDate!,
-      totalPrice: _calculateTotalPrice(),
+      totalPrice: totalPriceVND,
       notes: _notesController.text.trim(),
     );
 
@@ -142,10 +165,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
     if (result['success']) {
       final bookingId = result['bookingId'];
-      final totalPrice = _calculateTotalPrice();
-      final totalPriceVND = _convertToVND(totalPrice);
 
-      // Hiển thị dialog chọn phương thức thanh toán
       final paymentMethod = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
@@ -157,7 +177,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 leading: const Icon(Icons.credit_card, color: Colors.blue),
                 title: const Text('Thanh toán online qua VNPay'),
                 subtitle: Text(
-                  '${totalPriceVND.toStringAsFixed(0)} VNĐ',
+                  _formatVND(totalPriceVND),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.green,
@@ -180,33 +200,23 @@ class _BookingScreenState extends State<BookingScreen> {
       if (paymentMethod == null) return;
 
       if (paymentMethod == 'vnpay') {
-        // Chuyển đến màn hình thanh toán
-        if (!mounted) return;
-        final paymentResult = await Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => PaymentScreen(
               bookingId: bookingId,
-              amount: totalPriceVND,
-              orderInfo: 'Thanh toan dat phong ${widget.house.name}',
+              amount: totalPriceVND, // VND thật
+              orderInfo: 'Thanh toán đặt phòng ${widget.house.name}',
             ),
           ),
         );
-
-        // Xử lý kết quả thanh toán nếu cần
-        if (paymentResult != null && mounted) {
-          // Có thể show dialog hoặc thông báo
-        }
       } else {
-        // Thanh toán sau
-        if (!mounted) return;
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Thành công'),
             content: const Text(
-              'Đặt phòng thành công! Bạn có thể thanh toán khi nhận phòng.',
-            ),
+                'Đặt phòng thành công! Bạn có thể thanh toán khi nhận phòng.'),
             actions: [
               TextButton(
                 onPressed: () {
@@ -229,10 +239,12 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  // ---------- UI ----------
+
   @override
   Widget build(BuildContext context) {
-    final totalPriceUSD = _calculateTotalPrice();
-    final totalPriceVND = _convertToVND(totalPriceUSD);
+    final totalPriceVND = _calculateTotalPriceVND();
+    final dailyPriceVND = _getDailyPriceVND();
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -258,7 +270,7 @@ class _BookingScreenState extends State<BookingScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // House Info Card
+              // Thông tin nhà
               Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
@@ -298,7 +310,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           ),
                           const SizedBox(height: 5),
                           Text(
-                            '\$${widget.house.price}/tháng',
+                            _formatMillionPerDay(dailyPriceVND),
                             style: Theme.of(context)
                                 .textTheme
                                 .displayLarge!
@@ -316,99 +328,21 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
               const SizedBox(height: 30),
 
-              // Date Selection
-              Text(
-                'Thông Tin Đặt Phòng',
-                style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 20),
-              
-              GestureDetector(
-                onTap: () => _selectDate(context, true),
-                child: Container(
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_today,
-                          color: Theme.of(context).primaryColor),
-                      const SizedBox(width: 15),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Ngày nhận phòng',
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              _checkInDate == null
-                                  ? 'Chọn ngày'
-                                  : '${_checkInDate!.day}/${_checkInDate!.month}/${_checkInDate!.year}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .displayLarge!
-                                  .copyWith(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              // Chọn ngày
+              _buildDatePicker(
+                label: 'Ngày nhận phòng',
+                isCheckIn: true,
+                date: _checkInDate,
               ),
               const SizedBox(height: 15),
-              
-              GestureDetector(
-                onTap: () => _selectDate(context, false),
-                child: Container(
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_today,
-                          color: Theme.of(context).primaryColor),
-                      const SizedBox(width: 15),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Ngày trả phòng',
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              _checkOutDate == null
-                                  ? 'Chọn ngày'
-                                  : '${_checkOutDate!.day}/${_checkOutDate!.month}/${_checkOutDate!.year}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .displayLarge!
-                                  .copyWith(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              _buildDatePicker(
+                label: 'Ngày trả phòng',
+                isCheckIn: false,
+                date: _checkOutDate,
               ),
               const SizedBox(height: 20),
 
-              // Notes
+              // Ghi chú
               TextFormField(
                 controller: _notesController,
                 maxLines: 4,
@@ -424,7 +358,7 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
               const SizedBox(height: 30),
 
-              // Price Summary
+              // Tổng tiền
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -454,18 +388,15 @@ class _BookingScreenState extends State<BookingScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Tổng tiền (USD):',
+                          'Giá thuê/ngày:',
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                         Text(
-                          '\$${totalPriceUSD.toStringAsFixed(2)}',
+                          _formatVND(dailyPriceVND),
                           style: Theme.of(context)
                               .textTheme
                               .displayLarge!
-                              .copyWith(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              .copyWith(fontSize: 16),
                         ),
                       ],
                     ),
@@ -474,7 +405,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Tổng tiền (VNĐ):',
+                          'Tổng tiền:',
                           style: Theme.of(context)
                               .textTheme
                               .displayLarge!
@@ -484,7 +415,7 @@ class _BookingScreenState extends State<BookingScreen> {
                               ),
                         ),
                         Text(
-                          '${totalPriceVND.toStringAsFixed(0)} ₫',
+                          _formatVND(totalPriceVND),
                           style: Theme.of(context)
                               .textTheme
                               .displayLarge!
@@ -501,7 +432,7 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
               const SizedBox(height: 30),
 
-              // Submit Button
+              // Nút xác nhận
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -534,6 +465,51 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDatePicker({
+    required String label,
+    required bool isCheckIn,
+    required DateTime? date,
+  }) {
+    return GestureDetector(
+      onTap: () => _selectDate(context, isCheckIn),
+      child: Container(
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.calendar_today, color: Theme.of(context).primaryColor),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    date == null
+                        ? 'Chọn ngày'
+                        : '${date.day}/${date.month}/${date.year}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .displayLarge!
+                        .copyWith(fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

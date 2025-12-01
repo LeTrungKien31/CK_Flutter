@@ -42,14 +42,15 @@ class ContentIntro extends StatelessWidget {
             text: TextSpan(
               children: [
                 TextSpan(
-                  text: '\$${house.price?.toStringAsFixed(0) ?? "0"}',
+                  // ignore: unnecessary_string_interpolations
+                  text: '${house.price?.toStringAsFixed(0) ?? "0"}',
                   style: Theme.of(context).textTheme.displayLarge!.copyWith(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                 ),
                 TextSpan(
-                  text: ' Per Month',
+                  text: ' VND',
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                         fontSize: 14,
                       ),

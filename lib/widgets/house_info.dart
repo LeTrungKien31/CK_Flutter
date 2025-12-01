@@ -17,11 +17,11 @@ class HouseInfo extends StatelessWidget {
             children: [
               _MenuInfo(
                 imageUrl: 'assets/icons/bedroom.svg',
-                content: '${house.bedrooms ?? 0} Bedroom',
+                content: '${house.bedrooms ?? 0} Phòng ngủ',
               ),
               _MenuInfo(
                 imageUrl: 'assets/icons/bathroom.svg',
-                content: '${house.bathrooms ?? 0} Bathroom',
+                content: '${house.bathrooms ?? 0} Phòng tắm',
               ),
             ],
           ),
@@ -30,11 +30,11 @@ class HouseInfo extends StatelessWidget {
             children: [
               _MenuInfo(
                 imageUrl: 'assets/icons/kitchen.svg',
-                content: '${house.kitchens ?? 0} Kitchen',
+                content: '${house.kitchens ?? 0} Nhà bếp',
               ),
               _MenuInfo(
                 imageUrl: 'assets/icons/parking.svg',
-                content: '${house.parking ?? 0} Parking',
+                content: '${house.parking ?? 0} Chỗ đậu xe',
               ),
             ],
           ),

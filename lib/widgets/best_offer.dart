@@ -28,14 +28,14 @@ class BestOffer extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Best Offer',
+                'Ưu đãi tốt nhất',
                 style: Theme.of(context).textTheme.displayLarge!.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
               ),
               Text(
-                'See All',
+                'Xem Tất Cả',
                 style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       fontSize: 14,
                     ),

@@ -1,3 +1,4 @@
+// lib/screens/booking/my_bookings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:house_rent/services/auth_service.dart';
 import 'package:house_rent/services/booking_service.dart';
@@ -115,12 +116,21 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     }
   }
 
+  /// Format tổng tiền theo VND (nhận num hoặc String)
   String _formatPrice(dynamic price) {
-    if (price == null) return '0.00';
+    if (price == null) return '0 đ';
+
+    num value;
     if (price is num) {
-      return price.toDouble().toStringAsFixed(2);
+      value = price;
+    } else if (price is String) {
+      value = num.tryParse(price) ?? 0;
+    } else {
+      value = 0;
     }
-    return '0.00';
+
+    final formatter = NumberFormat('#,##0', 'vi_VN');
+    return '${formatter.format(value)} đ';
   }
 
   @override
@@ -182,7 +192,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              // ignore: deprecated_member_use
                               color: Colors.grey.withOpacity(0.1),
                               spreadRadius: 1,
                               blurRadius: 5,
@@ -193,7 +202,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // House Image & Name
+                            // House Image & Status
                             ClipRRect(
                               borderRadius: const BorderRadius.only(
                                 topLeft: Radius.circular(12),
@@ -343,7 +352,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                             .copyWith(fontSize: 14),
                                       ),
                                       Text(
-                                        '\$${_formatPrice(booking['totalPrice'])}',
+                                        _formatPrice(booking['totalPrice']),
                                         style: Theme.of(context)
                                             .textTheme
                                             .displayLarge!

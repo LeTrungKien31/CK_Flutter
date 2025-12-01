@@ -13,7 +13,7 @@ class WelcomeText extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Hello $userName',
+            'Xin Chào $userName',
             style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -21,7 +21,7 @@ class WelcomeText extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Find your sweet Home',
+            'Tìm ngôi nhà ngọt ngào của bạn',
             style: Theme.of(context).textTheme.displayLarge!.copyWith(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

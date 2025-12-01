@@ -17,48 +17,41 @@ class DatabaseHelper {
 
     try {
       _connection = PostgreSQLConnection(
-        '10.0.2.2', // Host cho emulator Android (localhost máy thật)
-        5432, // Port
-        'house_rent_db', // Tên database
-        username: 'postgres', // Username
-        password: '123', // Password
+        '10.0.2.2',
+        5432,
+        'house_rent_db',
+        username: 'postgres',
+        password: '123',
       );
 
       await _connection!.open();
-      // ignore: avoid_print
-      print('✅ Database connected successfully');
+      print('✅ Kết nối database thành công');
       return _connection!;
     } catch (e) {
-      // ignore: avoid_print
-      print('❌ Database connection error: $e');
+      print('❌ Lỗi kết nối database: $e');
       rethrow;
     }
   }
 
-  // Đóng kết nối
   Future<void> closeConnection() async {
     if (_connection != null && _connection!.isClosed == false) {
       await _connection!.close();
-      // ignore: avoid_print
-      print('Database connection closed');
+      print('Đã đóng kết nối database');
     }
   }
 
-  // Hash password
   String _hashPassword(String password) {
     final bytes = utf8.encode(password);
     final digest = sha256.convert(bytes);
     return digest.toString();
   }
 
-  // Khởi tạo database
   Future<void> initDatabase() async {
     try {
       final conn = await connection;
-      // ignore: avoid_print
-      print('🔧 Initializing database...');
+      print('🔧 Đang khởi tạo database...');
 
-      // Tạo bảng users với cột role
+      // Tạo bảng users
       await conn.execute('''
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
@@ -72,23 +65,18 @@ class DatabaseHelper {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       ''');
-      // ignore: avoid_print
-      print('✅ Table users created/exists');
+      print('✅ Bảng users đã tạo/tồn tại');
 
-      // Đảm bảo cột role tồn tại (cho trường hợp DB cũ không có cột này)
       try {
         await conn.execute('''
           ALTER TABLE users
           ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user';
         ''');
-        // ignore: avoid_print
-        print('✅ Role column checked/added');
+        print('✅ Đã kiểm tra/thêm cột role');
       } catch (e) {
-        // ignore: avoid_print
-        print('ℹ️ Role column may already exist: $e');
+        print('ℹ️ Cột role có thể đã tồn tại: $e');
       }
 
-      // Tạo admin mặc định nếu chưa tồn tại
       await _createDefaultAdmin(conn);
 
       // Tạo bảng houses
@@ -98,7 +86,7 @@ class DatabaseHelper {
           name VARCHAR(255) NOT NULL,
           address TEXT NOT NULL,
           image_url TEXT,
-          price DECIMAL(10, 2) NOT NULL,
+          price DECIMAL(15, 2) NOT NULL,
           area DECIMAL(10, 2),
           bedrooms INTEGER,
           bathrooms INTEGER,
@@ -109,8 +97,7 @@ class DatabaseHelper {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       ''');
-      // ignore: avoid_print
-      print('✅ Table houses created/exists');
+      print('✅ Bảng houses đã tạo/tồn tại');
 
       // Tạo bảng bookings
       await conn.execute('''
@@ -121,41 +108,32 @@ class DatabaseHelper {
           booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           check_in_date DATE NOT NULL,
           check_out_date DATE NOT NULL,
-          total_price DECIMAL(10, 2),
+          total_price DECIMAL(15, 2),
           status VARCHAR(50) DEFAULT 'pending',
           notes TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       ''');
-      // ignore: avoid_print
-      print('✅ Table bookings created/exists');
+      print('✅ Bảng bookings đã tạo/tồn tại');
 
-      // Insert dữ liệu mẫu cho houses
       await _insertSampleHouses(conn);
 
-      // ignore: avoid_print
-      print('✅ Database initialization completed');
+      print('✅ Hoàn tất khởi tạo database');
     } catch (e) {
-      // ignore: avoid_print
-      print('❌ Database initialization error: $e');
+      print('❌ Lỗi khởi tạo database: $e');
       rethrow;
     }
   }
 
   Future<void> _createDefaultAdmin(PostgreSQLConnection conn) async {
     try {
-      // Kiểm tra xem đã có admin chưa
       final adminCheck = await conn.query(
         "SELECT id FROM users WHERE role = 'admin' LIMIT 1",
       );
 
       if (adminCheck.isEmpty) {
-        // ignore: avoid_print
-        print('📝 Creating default admin account...');
+        print('📝 Đang tạo tài khoản admin mặc định...');
 
-        // Tạo admin với:
-        // Email: admin@house.com
-        // Password: admin123
         final hashedPassword = _hashPassword('admin123');
 
         await conn.query(
@@ -165,98 +143,115 @@ class DatabaseHelper {
           RETURNING id
           ''',
           substitutionValues: {
-            'email': 'admin@house.com',
+            'email': 'admin@nhasang.vn',
             'password': hashedPassword,
-            'fullName': 'Administrator',
-            'phone': '0000000000',
+            'fullName': 'Quản Trị Viên',
+            'phone': '0901234567',
           },
         );
 
-        // ignore: avoid_print
-        print('✅ Default admin created:');
-        // ignore: avoid_print
-        print('   Email: admin@house.com');
-        // ignore: avoid_print
-        print('   Password: admin123');
+        print('✅ Đã tạo tài khoản admin:');
+        print('   Email: admin@nhasang.vn');
+        print('   Mật khẩu: admin123');
       } else {
-        // ignore: avoid_print
-        print('ℹ️ Admin account already exists');
+        print('ℹ️ Tài khoản admin đã tồn tại');
       }
     } catch (e) {
-      // ignore: avoid_print
-      print('❌ Error creating admin: $e');
+      print('❌ Lỗi tạo admin: $e');
     }
   }
 
   Future<void> _insertSampleHouses(PostgreSQLConnection conn) async {
     try {
-      // Kiểm tra xem đã có dữ liệu chưa
       final countResult = await conn.query('SELECT COUNT(*) FROM houses');
       final count = countResult.first[0] as int;
 
       if (count > 0) {
-        // ignore: avoid_print
-        print('ℹ️ Sample houses already exist ($count houses)');
+        print('ℹ️ Dữ liệu mẫu đã tồn tại ($count nhà)');
         return;
       }
 
-      // ignore: avoid_print
-      print('📝 Inserting sample houses...');
+      print('📝 Đang thêm dữ liệu mẫu...');
 
-      // Insert từng house để dễ debug
       final houses = [
         {
-          'name': 'The Moon House',
-          'address': 'P455, Chhatak, Sylhet',
+          'name': 'Nhà Phố Hiện Đại Quận 1',
+          'address': '123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh',
           'image_url': 'assets/images/house01.jpeg',
-          'price': 4455.00,
-          'area': 500.0,
-          'bedrooms': 5,
-          'bathrooms': 5,
-          'kitchens': 2,
-          'parking': 5,
-          'description':
-              'Beautiful house with modern amenities and stunning moon views'
-        },
-        {
-          'name': 'Sunset Villa',
-          'address': '123 Beach Road, Sylhet',
-          'image_url': 'assets/images/house02.jpeg',
-          'price': 5200.00,
-          'area': 600.0,
-          'bedrooms': 6,
-          'bathrooms': 4,
-          'kitchens': 2,
-          'parking': 6,
-          'description':
-              'Luxury villa near the beach with breathtaking sunset views'
-        },
-        {
-          'name': 'Garden Paradise',
-          'address': '789 Green Street, Sylhet',
-          'image_url': 'assets/images/offer01.jpeg',
-          'price': 3800.00,
-          'area': 450.0,
+          'price': 45000000.0, // 45 triệu VNĐ/tháng
+          'area': 120.0,
           'bedrooms': 4,
           'bathrooms': 3,
           'kitchens': 1,
-          'parking': 4,
+          'parking': 2,
           'description':
-              'Cozy house with beautiful garden and peaceful surroundings'
+              'Nhà phố 3 tầng hiện đại, đầy đủ nội thất cao cấp, khu vực trung tâm sầm uất'
         },
         {
-          'name': 'Modern Loft',
-          'address': '456 Downtown Ave, Sylhet',
-          'image_url': 'assets/images/offer02.jpeg',
-          'price': 3200.00,
-          'area': 400.0,
-          'bedrooms': 3,
-          'bathrooms': 2,
+          'name': 'Biệt Thự Vườn Quận 2',
+          'address': '456 Đường Số 9, Thảo Điền, Quận 2, TP. Hồ Chí Minh',
+          'image_url': 'assets/images/house02.jpeg',
+          'price': 80000000.0, // 80 triệu VNĐ/tháng
+          'area': 300.0,
+          'bedrooms': 5,
+          'bathrooms': 4,
           'kitchens': 1,
           'parking': 3,
           'description':
-              'Contemporary design in city center with all modern facilities'
-        }
+              'Biệt thự sang trọng với sân vườn rộng rãi, hồ bơi riêng, khu compound an ninh'
+        },
+        {
+          'name': 'Căn Hộ Penthouse Quận 7',
+          'address': '789 Nguyễn Hữu Thọ, Phú Mỹ Hưng, Quận 7, TP. Hồ Chí Minh',
+          'image_url': 'assets/images/offer01.jpeg',
+          'price': 35000000.0, // 35 triệu VNĐ/tháng
+          'area': 150.0,
+          'bedrooms': 3,
+          'bathrooms': 2,
+          'kitchens': 1,
+          'parking': 2,
+          'description':
+              'Penthouse cao cấp view sông Sài Gòn, nội thất hiện đại, tiện ích 5 sao'
+        },
+        {
+          'name': 'Nhà Mặt Tiền Quận 3',
+          'address': '321 Võ Văn Tần, Quận 3, TP. Hồ Chí Minh',
+          'image_url': 'assets/images/offer02.jpeg',
+          'price': 28000000.0, // 28 triệu VNĐ/tháng
+          'area': 100.0,
+          'bedrooms': 3,
+          'bathrooms': 2,
+          'kitchens': 1,
+          'parking': 1,
+          'description':
+              'Nhà mặt tiền đường lớn, thích hợp kinh doanh hoặc làm văn phòng công ty'
+        },
+        {
+          'name': 'Villa Biển Vũng Tàu',
+          'address': '555 Trần Phú, Phường 5, TP. Vũng Tàu',
+          'image_url': 'assets/images/house01.jpeg',
+          'price': 50000000.0, // 50 triệu VNĐ/tháng
+          'area': 250.0,
+          'bedrooms': 4,
+          'bathrooms': 3,
+          'kitchens': 1,
+          'parking': 3,
+          'description':
+              'Villa view biển tuyệt đẹp, khu nghỉ dưỡng cao cấp, đầy đủ tiện nghi'
+        },
+        {
+          'name': 'Nhà Phố Thủ Đức',
+          'address': '111 Võ Văn Ngân, Thủ Đức, TP. Hồ Chí Minh',
+          'image_url': 'assets/images/house02.jpeg',
+          'price': 18000000.0, // 18 triệu VNĐ/tháng
+          'area': 80.0,
+          'bedrooms': 2,
+          'bathrooms': 2,
+          'kitchens': 1,
+          'parking': 1,
+          'description':
+              'Nhà mới xây, gần trường đại học, khu vực yên tĩnh, an ninh tốt'
+        },
       ];
 
       for (var house in houses) {
@@ -278,20 +273,16 @@ class DatabaseHelper {
             'description': house['description'],
           },
         );
-        // ignore: avoid_print
-        print('  ✅ Inserted: ${house['name']}');
+        print('  ✅ Đã thêm: ${house['name']}');
       }
 
-      // ignore: avoid_print
-      print('✅ All sample houses inserted successfully');
+      print('✅ Đã thêm tất cả dữ liệu mẫu');
     } catch (e) {
-      // ignore: avoid_print
-      print('❌ Error inserting sample houses: $e');
+      print('❌ Lỗi thêm dữ liệu mẫu: $e');
       rethrow;
     }
   }
 
-  // Thêm method để kiểm tra dữ liệu
   Future<void> checkData() async {
     try {
       final conn = await connection;
@@ -302,19 +293,13 @@ class DatabaseHelper {
       final admins =
           await conn.query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
 
-      // ignore: avoid_print
-      print('\n📊 Database Status:');
-      // ignore: avoid_print
-      print('  Houses: ${houses.first[0]}');
-      // ignore: avoid_print
-      print('  Users: ${users.first[0]}');
-      // ignore: avoid_print
-      print('  Admins: ${admins.first[0]}');
-      // ignore: avoid_print
-      print('  Bookings: ${bookings.first[0]}');
+      print('\n📊 Trạng thái Database:');
+      print('  Nhà: ${houses.first[0]}');
+      print('  Người dùng: ${users.first[0]}');
+      print('  Quản trị viên: ${admins.first[0]}');
+      print('  Đặt phòng: ${bookings.first[0]}');
     } catch (e) {
-      // ignore: avoid_print
-      print('❌ Error checking data: $e');
+      print('❌ Lỗi kiểm tra dữ liệu: $e');
     }
   }
 }
